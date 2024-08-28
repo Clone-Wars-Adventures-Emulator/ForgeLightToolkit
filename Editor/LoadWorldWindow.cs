@@ -14,8 +14,8 @@ namespace ForgeLightToolkit.Editor
 {
     public class LoadWorldWindow : EditorWindow
     {
-        private string _worldName = "FabledRealms";
-        private string _assetsPath = "Assets/ForgeLight/FreeRealms";
+        private string _worldName = "";
+        private string _assetsPath = "";
 
         private bool _loadLights = true;
         private bool _loadObjects = true;
@@ -44,7 +44,7 @@ namespace ForgeLightToolkit.Editor
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            GUILayout.Label("Example: Assets/ForgeLight/FreeRealms", EditorStyles.miniBoldLabel);
+            GUILayout.Label("Example: Assets/ForgeLight/CloneWarsAdventures", EditorStyles.miniBoldLabel);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
