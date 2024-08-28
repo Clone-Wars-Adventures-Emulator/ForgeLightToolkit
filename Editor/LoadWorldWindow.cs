@@ -70,7 +70,7 @@ namespace ForgeLightToolkit.Editor
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            GUILayout.Label("Example: FabledRealms", EditorStyles.miniBoldLabel);
+            GUILayout.Label("Example: JediTemple", EditorStyles.miniBoldLabel);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -101,33 +101,6 @@ namespace ForgeLightToolkit.Editor
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-
-            _loadRoadMap = GUILayout.Toggle(_loadRoadMap, "Road Map (FR Only)");
-
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(10);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("Load All Worlds", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(_assetsPath))
-            {
-                var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{_assetsPath}/*.gzne\"");
-
-                foreach (var gzneFileAssetGuid in gzneFileAssetGuids)
-                {
-                    var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
-
-                    var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
-
-                    if (gzneFile is null)
-                        continue;
-
-                    LoadWorld(gzneFile.name, _assetsPath, _loadObjects, _loadLights, _loadRoadMap);
-                }
-            }
 
             if (GUILayout.Button("Load World", GUILayout.ExpandWidth(false))
                 && !string.IsNullOrEmpty(_worldName) && !string.IsNullOrEmpty(_assetsPath))
