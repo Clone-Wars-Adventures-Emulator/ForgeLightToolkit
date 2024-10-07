@@ -120,6 +120,7 @@ namespace ForgeLightToolkit.Editor
                 return;
 
             var worldObject = new GameObject($"World ({worldName})");
+            worldObject.transform.localScale = new Vector3(1, 1, -1);
 
             var loadedRuntimeObjects = new Dictionary<int, RuntimeObject>();
 
