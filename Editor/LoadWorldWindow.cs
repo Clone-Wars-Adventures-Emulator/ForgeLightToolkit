@@ -16,10 +16,10 @@ namespace ForgeLightToolkit.Editor
     {
         private string _worldName = "";
         private string _assetsPath = "";
+        private string _prefabSavePath = "";
 
         private bool _loadLights = true;
         private bool _loadObjects = true;
-        private bool _loadRoadMap = true;
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow()
@@ -53,6 +53,32 @@ namespace ForgeLightToolkit.Editor
             GUILayout.FlexibleSpace();
 
             _assetsPath = EditorGUILayout.TextField(_assetsPath, GUILayout.ExpandWidth(false));
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(10);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Label("Prefab Save Location", EditorStyles.boldLabel);
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Label("Example: Assets/Prefabs/Worlds", EditorStyles.miniBoldLabel);
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            _prefabSavePath = EditorGUILayout.TextField(_prefabSavePath, GUILayout.ExpandWidth(false));
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -104,7 +130,7 @@ namespace ForgeLightToolkit.Editor
 
             if (GUILayout.Button("Load World", GUILayout.ExpandWidth(false))
                 && !string.IsNullOrEmpty(_worldName) && !string.IsNullOrEmpty(_assetsPath))
-                LoadWorld(_worldName, _assetsPath, _loadObjects, _loadLights, _loadRoadMap);
+                LoadWorld(_worldName, _assetsPath, _loadObjects, _loadLights, _prefabSavePath);
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -112,7 +138,7 @@ namespace ForgeLightToolkit.Editor
             GUILayout.EndArea();
         }
 
-        private void LoadWorld(string worldName, string assetsPath, bool loadObjects, bool loadLights, bool loadRoadMap)
+        private void LoadWorld(string worldName, string assetsPath, bool loadObjects, bool loadLights, string prefabSaveLocation)
         {
             var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>($"{assetsPath}/{worldName}.gzne");
 
@@ -120,7 +146,6 @@ namespace ForgeLightToolkit.Editor
                 return;
 
             var worldObject = new GameObject($"World ({worldName})");
-            worldObject.transform.localScale = new Vector3(1, 1, -1);
 
             var loadedRuntimeObjects = new Dictionary<int, RuntimeObject>();
 
@@ -179,7 +204,7 @@ namespace ForgeLightToolkit.Editor
 
                                 chunkMaterial.SetFloat($"_DetailRepeat{i}", ecoData.Scale);
 
-                                var ecoDataTextureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(ecoData.Texture, "png"));
+                                var ecoDataTextureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(ecoData.Texture, "dds"));
 
                                 var ecoDataTexture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(ecoDataTextureFilePath);
 
@@ -258,50 +283,7 @@ namespace ForgeLightToolkit.Editor
                         }
                     }
                 }
-
-                if (loadRoadMap)
-                {
-                    var mapFilePath = Path.Combine(assetsPath, $"{worldName}.map");
-
-                    var mapFile = AssetDatabase.LoadAssetAtPath<MapFile>(mapFilePath);
-
-                    if (mapFile is not null)
-                    {
-                        var roadMapObject = new GameObject("Road Map")
-                        {
-                            transform =
-                            {
-                                parent = worldObject.transform
-                            }
-                        };
-
-                        foreach (var node in mapFile.Nodes)
-                        {
-                            var nodeObject = new GameObject($"Node ({node.Id})")
-                            {
-                                transform =
-                                {
-                                    position = node.Position,
-                                    parent = roadMapObject.transform
-                                }
-                            };
-
-                            var nodeRenderer = nodeObject.AddComponent<NodeRenderer>();
-
-                            nodeRenderer.Parent = node;
-
-                            foreach (var edge in node.Edges)
-                            {
-                                var edgeNode = mapFile.Nodes.FirstOrDefault(x => x.Id == edge.Id);
-
-                                nodeRenderer.EdgeNodes.Add(edgeNode);
-                            }
-                        }
-                    }
-                }
             }
-
-            worldObject.transform.localScale = new Vector3(1, 1, -1);
         }
 
         private void LoadAdrFile(string assetsPath, string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, string agrFileName = null)
@@ -415,7 +397,7 @@ namespace ForgeLightToolkit.Editor
                             continue;
                         }
 
-                        var textureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(textureName, "png"));
+                        var textureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(textureName, "dds"));
 
                         var texture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFilePath);
 
