@@ -284,6 +284,7 @@ namespace ForgeLightToolkit.Editor
                     }
                 }
             }
+            PrefabUtility.SaveAsPrefabAsset(worldObject, prefabSaveLocation + worldName + ".prefab");
         }
 
         private void LoadAdrFile(string assetsPath, string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, string agrFileName = null)
@@ -361,7 +362,23 @@ namespace ForgeLightToolkit.Editor
                     continue;
                 }
 
-                var objectMaterial = new Material(materialShader);
+                Material objectMaterial = new Material(materialShader);
+
+                var matFilePath = "Assets/Materials/Custom/";
+                var matFilePathExtra = "";
+                Material loadedMat = null;
+
+                foreach (var parameterEntry in materialEntry.ParameterEntries) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT) {
+                        var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
+                        loadedMat = AssetDatabase.LoadAssetAtPath<Material>(matFilePath + textureName.Split(".")[0] + ".mat");
+                    }
+                }
+
+                if (loadedMat != null) {
+                    objectMeshRenderer.material = loadedMat;
+                    continue;
+                }
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries)
                 {
@@ -409,9 +426,15 @@ namespace ForgeLightToolkit.Editor
 
                         objectMaterial.SetTexture(parameterName, texture2d);
                         objectMaterial.SetTextureScale(parameterName, Vector2.right + Vector2.down);
+
+                        matFilePathExtra = textureName.Split(".")[0] + ".mat";
+                        objectMaterial.name = textureName.Split(".")[0];
                     }
                 }
-
+                if (!AssetDatabase.Contains(objectMaterial) && matFilePathExtra != "") {
+                    AssetDatabase.CreateAsset(objectMaterial, matFilePath + matFilePathExtra);
+                    matFilePathExtra = "";
+                }
                 objectMeshRenderer.material = objectMaterial;
             }
         }
