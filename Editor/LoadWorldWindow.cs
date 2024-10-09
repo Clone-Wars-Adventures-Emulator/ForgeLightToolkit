@@ -204,7 +204,7 @@ namespace ForgeLightToolkit.Editor
 
                                 chunkMaterial.SetFloat($"_DetailRepeat{i}", ecoData.Scale);
 
-                                var ecoDataTextureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(ecoData.Texture, "dds"));
+                                var ecoDataTextureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(ecoData.Texture, "png"));
 
                                 var ecoDataTexture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(ecoDataTextureFilePath);
 
@@ -414,7 +414,7 @@ namespace ForgeLightToolkit.Editor
                             continue;
                         }
 
-                        var textureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(textureName, "dds"));
+                        var textureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(textureName, "png"));
 
                         var texture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFilePath);
 
