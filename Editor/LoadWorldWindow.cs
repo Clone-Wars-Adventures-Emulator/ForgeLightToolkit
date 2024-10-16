@@ -7,7 +7,6 @@ using UnityEngine;
 
 using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
-using ForgeLightToolkit.Editor.FileTypes.Map;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 
 namespace ForgeLightToolkit.Editor
@@ -21,6 +20,8 @@ namespace ForgeLightToolkit.Editor
 
         private bool _loadLights = true;
         private bool _loadObjects = true;
+        private bool _skipAssetSaving = false;
+        private bool _ignoreExistingAssets = false;
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow()
@@ -155,6 +156,26 @@ namespace ForgeLightToolkit.Editor
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
+            _skipAssetSaving = GUILayout.Toggle(_skipAssetSaving, "Skip Asset Saving");
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(20);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            _ignoreExistingAssets = GUILayout.Toggle(_ignoreExistingAssets, "Ignore Existing Assets");
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(20);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
             if (GUILayout.Button("Load World", GUILayout.ExpandWidth(false))
                 && !string.IsNullOrEmpty(_worldName) && !string.IsNullOrEmpty(_assetsPath))
                 LoadWorld(_worldName, _assetsPath, _loadObjects, _loadLights, _prefabSavePath);
@@ -207,10 +228,16 @@ namespace ForgeLightToolkit.Editor
                         var gck2File = AssetDatabase.LoadAssetAtPath<Gck2File>(gck2FilePath);
 
                         foreach (var tile in gcnkFile.Tiles) {
+                            var loadedChunkMaterial = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(_materialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
                             var chunkMaterial = new Material(Shader.Find($"Custom/RuntimeTerrain_{tile.EcoDataList.Count}")) {
                                 name = $"Tile {tile.Index}"
                             };
 
+                            if (loadedChunkMaterial is not null && !_ignoreExistingAssets) {
+                                chunkMaterial = loadedChunkMaterial;
+                                chunkMaterials[tile.Index] = chunkMaterial;
+                                continue;
+                            }
                             if (gck2File is not null)
                                 chunkMaterial.mainTexture = gck2File.Texture;
 
@@ -228,6 +255,9 @@ namespace ForgeLightToolkit.Editor
                                 var ecoDataTexture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(ecoDataTextureFilePath);
 
                                 chunkMaterial.SetTexture($"_DetailColorMap{i}", ecoDataTexture2d);
+                            }
+                            if (!_skipAssetSaving) {
+                                AssetDatabase.CreateAsset(chunkMaterial, Path.Combine(_materialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
                             }
 
                             chunkMaterials[tile.Index] = chunkMaterial;
@@ -289,7 +319,9 @@ namespace ForgeLightToolkit.Editor
                     }
                 }
             }
-            PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(_prefabSavePath, "Worlds", worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            if (!_skipAssetSaving) {
+                PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(_prefabSavePath, "Worlds", worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            }
         }
 
         private void LoadAdrFile(string assetsPath, string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation)
@@ -321,7 +353,7 @@ namespace ForgeLightToolkit.Editor
             }
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(_prefabSavePath, "Objects", Path.ChangeExtension(adrFileName, "prefab")));
 
-            if (existingPrefab is not null) {
+            if (existingPrefab is not null && !_ignoreExistingAssets) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -357,7 +389,7 @@ namespace ForgeLightToolkit.Editor
 
                 var loadedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(Path.Combine(_materialsSavePath, meshObject.name + ".asset"));
 
-                if (loadedMesh != null) {
+                if (loadedMesh != null && !_ignoreExistingAssets) {
                     objectMeshFilter.sharedMesh = loadedMesh;
                 }
                 else {
@@ -389,6 +421,7 @@ namespace ForgeLightToolkit.Editor
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
                     if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
+                        if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(textureName, "mat");
                         loadedMat = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(_materialsSavePath, matFileName));
                     }
@@ -451,7 +484,7 @@ namespace ForgeLightToolkit.Editor
                         objectMaterial.name = textureName.Split(".")[0];
                     }
                 }
-                if (!AssetDatabase.Contains(objectMaterial) && matFileName != "") {
+                if (!AssetDatabase.Contains(objectMaterial) && matFileName != "" && !_skipAssetSaving) {
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(_materialsSavePath, matFileName));
                     meshObject.name = matFileName;
                     matFileName = "";
@@ -459,7 +492,9 @@ namespace ForgeLightToolkit.Editor
 
                 objectMeshRenderer.material = objectMaterial;
             }
-            PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(_prefabSavePath, "Objects", runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            if (!_skipAssetSaving) {
+                PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(_prefabSavePath, "Objects", runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            }
         }
     }
 }
