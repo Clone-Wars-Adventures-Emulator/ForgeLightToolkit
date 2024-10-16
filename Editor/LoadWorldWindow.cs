@@ -176,9 +176,20 @@ namespace ForgeLightToolkit.Editor
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("Load World", GUILayout.ExpandWidth(false))
-                && !string.IsNullOrEmpty(_worldName) && !string.IsNullOrEmpty(_assetsPath))
-                LoadWorld(_worldName, _assetsPath, _loadObjects, _loadLights, _prefabSavePath);
+            if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(_assetsPath) && !string.IsNullOrEmpty(_prefabSavePath) && !string.IsNullOrEmpty(_materialsSavePath)) {
+                var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{_assetsPath}/{_worldName}.gzne\"");
+
+                foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
+                    var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
+
+                    var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
+
+                    if (gzneFile is null)
+                        continue;
+
+                    LoadWorld(gzneFile.name, _assetsPath, _loadObjects, _loadLights, _prefabSavePath);
+                }
+            }
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
