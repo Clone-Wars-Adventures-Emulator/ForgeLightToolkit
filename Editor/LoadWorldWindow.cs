@@ -330,6 +330,7 @@ namespace ForgeLightToolkit.Editor
                     }
                 }
             }
+            worldObject.transform.localScale = new Vector3(1, 1, -1);
             if (!_skipAssetSaving) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(_prefabSavePath, "Worlds", worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
             }
