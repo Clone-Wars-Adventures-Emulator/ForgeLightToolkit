@@ -27,9 +27,12 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
         public Mesh Mesh;
 
-        public bool CreateMesh(string name, MaterialEntry materialEntry)
+        public bool CreateMesh(string name, MaterialEntry materialEntry, int meshIndex)
         {
-            Mesh = new Mesh();
+            Mesh = new Mesh
+            {
+                name = $"{name}_Mesh_{meshIndex}",
+            };
 
             var materialDefinition = MaterialInfo.Instance.MaterialDefinitions.SingleOrDefault(x => x.NameHash == materialEntry.Hash);
 
