@@ -26,6 +26,9 @@ namespace ForgeLightToolkit.Editor
         private bool _overrideWorldPrefab;
         private bool _overrideAllExistingAssets;
 
+        private HashSet<string> objectsAlreadyProcessed;
+        private HashSet<string> objectMaterialsAlreadyProcessed;
+
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow()
@@ -229,6 +232,9 @@ namespace ForgeLightToolkit.Editor
         private void LoadWorld(string worldName, OverrideUtil overrideUtil) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
 
+            objectsAlreadyProcessed = new HashSet<string>();
+            objectMaterialsAlreadyProcessed = new HashSet<string>();
+
             if (gzneFile is null)
                 return;
 
@@ -375,7 +381,8 @@ namespace ForgeLightToolkit.Editor
             }
 
             if (overrideUtil.shouldSaveWorld() || (loadedWorldObject is null && !overrideUtil.isFastMode())) {
-                PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);;
+                PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
+                objectsAlreadyProcessed.Add(worldObject.name);
             }
         }
 
@@ -384,7 +391,7 @@ namespace ForgeLightToolkit.Editor
 
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
-            if (existingPrefab is not null && !overrideUtil.shouldProcessWorldObject()) {
+            if ((existingPrefab is not null && !overrideUtil.shouldProcessWorldObject()) || objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0])) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -459,7 +466,7 @@ namespace ForgeLightToolkit.Editor
                 Material loadedMat = null;
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && overrideUtil.shouldLoadObjectMaterials()) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && (overrideUtil.shouldLoadObjectMaterials() || objectMaterialsAlreadyProcessed.Contains(Path.ChangeExtension(materialDefinition.Name + "_" + dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object), "mat")))) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
                         if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName, "mat");
@@ -516,6 +523,7 @@ namespace ForgeLightToolkit.Editor
                 }
                 if (overrideUtil.shouldSaveObjectMaterials()) {
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
+                    objectMaterialsAlreadyProcessed.Add(matFileName);
                     meshObject.name = meshEntry.Mesh.name;
                     matFileName = "";
                 }
@@ -534,6 +542,7 @@ namespace ForgeLightToolkit.Editor
 
             if (overrideUtil.shouldSaveWorldObjects()) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+                objectMaterialsAlreadyProcessed.Add(runtimeObject.name);
             }
         }
     }
