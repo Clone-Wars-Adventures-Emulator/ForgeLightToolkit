@@ -467,7 +467,7 @@ namespace ForgeLightToolkit.Editor
                     if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && (overrideUtil.shouldLoadObjectMaterials() || objectMaterialsAlreadyProcessed.Contains(Path.ChangeExtension(materialDefinition.Name + "_" + dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object), "mat")))) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
                         if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
-                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName, "mat");
+                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
                         loadedMat = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(materialsSavePath, matFileName));
                     }
                 }
@@ -515,7 +515,7 @@ namespace ForgeLightToolkit.Editor
                         objectMaterial.SetTexture(parameterName, texture2d);
                         objectMaterial.SetTextureScale(parameterName, Vector2.right + Vector2.down);
 
-                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName, "mat");
+                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
                         objectMaterial.name = textureName.Split(".")[0];
                     }
                 }
