@@ -27,7 +27,7 @@ namespace ForgeLightToolkit.Editor {
         }
 
         public bool shouldProcessWorld() {
-            return !(!overrideTerrainMaterials
+            return fastMode || !(!overrideTerrainMaterials
                 && !overrideObjectMaterials
                 && !overrideObjectPrefabs
                 && !overrideAllExistingAssets);
@@ -58,8 +58,9 @@ namespace ForgeLightToolkit.Editor {
         }
 
         public bool shouldProcessWorldObject() {
-            return !fastMode
-                && (overrideObjectPrefabs || overrideObjectMaterials);
+            return fastMode
+                || overrideObjectPrefabs
+                || overrideObjectMaterials;
         }
 
         public bool shouldSaveWorldObjects() {

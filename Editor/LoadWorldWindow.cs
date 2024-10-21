@@ -13,11 +13,11 @@ namespace ForgeLightToolkit.Editor
     public class LoadWorldWindow : EditorWindow
     {
         private string worldName = "";
-        private string assetsPath = "";
-        private string prefabSavePath = "";
-        private string materialsSavePath = "";
-        private string terrainMaterialsSavePath = "";
-        private string worldPrefabSavePath = "";
+        private string assetsPath = "Assets/ExtractedPacks";
+        private string prefabSavePath = "Assets/Prefabs/Objects";
+        private string materialsSavePath = "Assets/Materials";
+        private string terrainMaterialsSavePath = "Assets/TerrainMaterials";
+        private string worldPrefabSavePath = "Assets/Prefabs/Worlds";
 
         private bool _fastMode = false;
         private bool _overrideTerrainMaterials;
@@ -212,6 +212,8 @@ namespace ForgeLightToolkit.Editor
                 var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{worldName}.gzne\"");
 
                 OverrideUtil overrideUtil = new OverrideUtil(_fastMode, _overrideTerrainMaterials, _overrideObjectMaterials, _overrideObjectPrefabs, _overrideWorldPrefab, _overrideAllExistingAssets);
+                objectsAlreadyProcessed = new HashSet<string>();
+                objectMaterialsAlreadyProcessed = new HashSet<string>();
 
                 foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
                     var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
@@ -231,9 +233,6 @@ namespace ForgeLightToolkit.Editor
 
         private void LoadWorld(string worldName, OverrideUtil overrideUtil) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
-
-            objectsAlreadyProcessed = new HashSet<string>();
-            objectMaterialsAlreadyProcessed = new HashSet<string>();
 
             if (gzneFile is null)
                 return;
@@ -382,7 +381,6 @@ namespace ForgeLightToolkit.Editor
 
             if (overrideUtil.shouldSaveWorld() || (loadedWorldObject is null && !overrideUtil.isFastMode())) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
-                objectsAlreadyProcessed.Add(worldObject.name);
             }
         }
 
@@ -391,7 +389,7 @@ namespace ForgeLightToolkit.Editor
 
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
-            if ((existingPrefab is not null && !overrideUtil.shouldProcessWorldObject()) || objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0])) {
+            if (existingPrefab is not null && (!overrideUtil.shouldProcessWorldObject() || objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]))) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -522,6 +520,7 @@ namespace ForgeLightToolkit.Editor
                     }
                 }
                 if (overrideUtil.shouldSaveObjectMaterials()) {
+                    if (matFileName == "") matFileName = "FUCK.mat";
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
                     objectMaterialsAlreadyProcessed.Add(matFileName);
                     meshObject.name = meshEntry.Mesh.name;
@@ -542,7 +541,7 @@ namespace ForgeLightToolkit.Editor
 
             if (overrideUtil.shouldSaveWorldObjects()) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
-                objectMaterialsAlreadyProcessed.Add(runtimeObject.name);
+                objectsAlreadyProcessed.Add(runtimeObject.name);
             }
         }
     }
