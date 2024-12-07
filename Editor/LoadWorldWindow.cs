@@ -492,7 +492,9 @@ namespace ForgeLightToolkit.Editor
                 return;
             }
             if (!_fastMode) {
-                PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+                runtimeObject.transform.localScale = Vector3.one;
+                GameObject go = PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+                go.transform.localScale = Vector3.one * scale;
             }
             objectsAlreadyProcessed.Add(runtimeObject.name);
         }
