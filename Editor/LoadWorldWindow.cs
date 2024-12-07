@@ -182,7 +182,7 @@ namespace ForgeLightToolkit.Editor
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(25);
-            _overrideWorldPrefabsAndMats = GUILayout.Toggle(_overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Allows for reprocessing of object materials while maintaining all existing object prefabs themselves and all existing terrain materials"));
+            _overrideWorldPrefabsAndMats = GUILayout.Toggle(_overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
             GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
@@ -301,7 +301,7 @@ namespace ForgeLightToolkit.Editor
                             var fileExtension = Path.GetExtension(runtimeObject.FileName);
 
                             if (fileExtension == ".adr") {
-                                LoadAdrFile(assetsPath, runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, overrideUtil);
+                                LoadAdrFile(assetsPath, runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
                             } else if (fileExtension == ".agr") {
                                 var agrFilePath = Path.Combine(assetsPath, runtimeObject.FileName);
 
@@ -313,7 +313,7 @@ namespace ForgeLightToolkit.Editor
                                 }
 
                                 foreach (var actor in agrFile.ActorSet.Actors) {
-                                    LoadAdrFile(assetsPath, actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, overrideUtil);
+                                    LoadAdrFile(assetsPath, actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
                                 }
                             }
                         }
