@@ -202,7 +202,6 @@ namespace ForgeLightToolkit.Editor
                     LoadWorld(gzneFile.name);
                 }
             }
-            GUILayout.EndHorizontal();
 
             GUILayout.EndArea();
         }
@@ -468,7 +467,9 @@ namespace ForgeLightToolkit.Editor
                         objectMaterial.name = textureName.Split(".")[0];
                     }
                 }
-                if (matFileName == "") matFileName = "See_LoadWorldWindow_Line_473.mat";
+                if (matFileName == "") {
+                    matFileName = "See_LoadWorldWindow_Line_473.mat";
+                }
                 AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
                 objectMaterialsAlreadyProcessed.Add(matFileName);
                 meshObject.name = meshEntry.Mesh.name;
