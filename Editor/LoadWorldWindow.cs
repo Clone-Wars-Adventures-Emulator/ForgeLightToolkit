@@ -483,20 +483,12 @@ namespace ForgeLightToolkit.Editor
                 objectMeshRenderer.material = objectMaterial;
             }
 
-            if (existingPrefab is not null && !_fastMode) {
-                DestroyImmediate(runtimeObject);
-                GameObject go = Instantiate(existingPrefab, parentObject.transform);
-                go.transform.localPosition = position;
-                go.transform.localScale = Vector3.one * scale;
-                go.transform.localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg);
-                return;
-            }
+            objectsAlreadyProcessed.Add(runtimeObject.name);
             if (!_fastMode) {
                 runtimeObject.transform.localScale = Vector3.one;
-                GameObject go = PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
-                go.transform.localScale = Vector3.one * scale;
+                PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+                runtimeObject.transform.localScale = Vector3.one * scale;
             }
-            objectsAlreadyProcessed.Add(runtimeObject.name);
         }
     }
 }
