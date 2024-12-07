@@ -213,7 +213,7 @@ namespace ForgeLightToolkit.Editor
                 return;
 
             GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
-            if (loadedWorldObject is not null && !_overrideWorldPrefabsAndMats) {
+            if (loadedWorldObject is not null && !_overrideWorldPrefabsAndMats && !_fastMode) {
                 PrefabUtility.InstantiatePrefab(loadedWorldObject);
                 return;
             }
@@ -258,7 +258,7 @@ namespace ForgeLightToolkit.Editor
                                 name = $"Tile {tile.Index}"
                             };
 
-                            if (loadedChunkMaterial is not null && ! _overrideTerrainMaterials) {
+                            if (loadedChunkMaterial is not null && ! _overrideTerrainMaterials && !_fastMode) {
                                 chunkMaterial = loadedChunkMaterial;
                                 chunkMaterials[tile.Index] = chunkMaterial;
                                 continue;
@@ -281,7 +281,9 @@ namespace ForgeLightToolkit.Editor
 
                                 chunkMaterial.SetTexture($"_DetailColorMap{i}", ecoDataTexture2d);
                             }
-                            AssetDatabase.CreateAsset(chunkMaterial, Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
+                            if (!_fastMode) {
+                                AssetDatabase.CreateAsset(chunkMaterial, Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
+                            }
                             chunkMaterials[tile.Index] = chunkMaterial;
                         }
                         chunkMeshRenderer.materials = chunkMaterials;
@@ -337,15 +339,16 @@ namespace ForgeLightToolkit.Editor
                 }
             }
             worldObject.transform.localScale = new Vector3(1, 1, -1);
-
-            PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            if (!_fastMode) {
+                PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            }
         }
 
         private void LoadAdrFile(string assetsPath, string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation) {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
-            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0])) {
+            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !_fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -412,7 +415,7 @@ namespace ForgeLightToolkit.Editor
                 Material loadedMat = null;
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && objectMaterialsAlreadyProcessed.Contains(Path.ChangeExtension(materialDefinition.Name + "_" + dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object), "mat"))) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && objectMaterialsAlreadyProcessed.Contains(Path.ChangeExtension(materialDefinition.Name + "_" + dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object), "mat")) && !_fastMode) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
                         if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
@@ -470,7 +473,9 @@ namespace ForgeLightToolkit.Editor
                 if (matFileName == "") {
                     matFileName = "See_LoadWorldWindow_Line_473.mat";
                 }
-                AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
+                if (!_fastMode) {
+                    AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
+                }
                 objectMaterialsAlreadyProcessed.Add(matFileName);
                 meshObject.name = meshEntry.Mesh.name;
                 matFileName = "";
@@ -478,7 +483,7 @@ namespace ForgeLightToolkit.Editor
                 objectMeshRenderer.material = objectMaterial;
             }
 
-            if (existingPrefab is not null) {
+            if (existingPrefab is not null && !_fastMode) {
                 DestroyImmediate(runtimeObject);
                 GameObject go = Instantiate(existingPrefab, parentObject.transform);
                 go.transform.localPosition = position;
@@ -486,8 +491,9 @@ namespace ForgeLightToolkit.Editor
                 go.transform.localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg);
                 return;
             }
-
-            PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            if (!_fastMode) {
+                PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            }
             objectsAlreadyProcessed.Add(runtimeObject.name);
         }
     }
