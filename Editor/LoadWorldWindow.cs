@@ -24,8 +24,6 @@ namespace ForgeLightToolkit.Editor
         private bool _overrideWorldPrefabsAndMats;
 
         private HashSet<string> objectsAlreadyProcessed;
-        private HashSet<string> objectMaterialsAlreadyProcessed;
-
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow()
@@ -189,7 +187,6 @@ namespace ForgeLightToolkit.Editor
                 var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{worldName}.gzne\"");
 
                 objectsAlreadyProcessed = new HashSet<string>();
-                objectMaterialsAlreadyProcessed = new HashSet<string>();
 
                 foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
                     var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
@@ -415,7 +412,7 @@ namespace ForgeLightToolkit.Editor
                 Material loadedMat = null;
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && objectMaterialsAlreadyProcessed.Contains(Path.ChangeExtension(materialDefinition.Name + "_" + dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object), "mat")) && !_fastMode) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !_fastMode) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
                         if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
@@ -471,12 +468,11 @@ namespace ForgeLightToolkit.Editor
                     }
                 }
                 if (matFileName == "") {
-                    matFileName = "See_LoadWorldWindow_Line_473.mat";
+                    matFileName = "See_LoadWorldWindow_Line_476.mat";
                 }
                 if (!_fastMode) {
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
                 }
-                objectMaterialsAlreadyProcessed.Add(matFileName);
                 meshObject.name = meshEntry.Mesh.name;
                 matFileName = "";
 
