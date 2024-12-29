@@ -13,6 +13,7 @@ namespace ForgeLightToolkit.Editor
     public class LoadWorldWindow : EditorWindow
     {
         private string worldName = "";
+        private string adrName = "";
         private string assetsPath = "Assets/ExtractedPacks";
         private string prefabSavePath = "Assets/Prefabs/Objects";
         private string materialsSavePath = "Assets/Materials";
@@ -183,6 +184,8 @@ namespace ForgeLightToolkit.Editor
             _overrideWorldPrefabsAndMats = GUILayout.Toggle(_overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(25);
             if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
                 var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{worldName}.gzne\"");
 
@@ -199,7 +202,35 @@ namespace ForgeLightToolkit.Editor
                     LoadWorld(gzneFile.name);
                 }
             }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(15);
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            adrName = EditorGUILayout.TextField(adrName);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(25);
+            if (GUILayout.Button("Load Adr(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+                var adrFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{adrName}.adr\"");
+
+                objectsAlreadyProcessed = new HashSet<string>();
+
+                foreach (var adrFileAssetGuid in adrFileAssetGuids) {
+                    var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
+
+                    var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
+
+                    if (adrFile is null)
+                        continue;
+
+                    LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0,0,0,0), 1.0f, new Vector4(0,0,0,0));
+                }
+            }
+            GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
 
@@ -299,7 +330,7 @@ namespace ForgeLightToolkit.Editor
                             var fileExtension = Path.GetExtension(runtimeObject.FileName);
 
                             if (fileExtension == ".adr") {
-                                LoadAdrFile(assetsPath, runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
+                                LoadAdrFile(runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
                             } else if (fileExtension == ".agr") {
                                 var agrFilePath = Path.Combine(assetsPath, runtimeObject.FileName);
 
@@ -311,7 +342,7 @@ namespace ForgeLightToolkit.Editor
                                 }
 
                                 foreach (var actor in agrFile.ActorSet.Actors) {
-                                    LoadAdrFile(assetsPath, actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
+                                    LoadAdrFile(actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
                                 }
                             }
                         }
@@ -341,7 +372,7 @@ namespace ForgeLightToolkit.Editor
             }
         }
 
-        private void LoadAdrFile(string assetsPath, string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation) {
+        private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation) {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
@@ -373,7 +404,7 @@ namespace ForgeLightToolkit.Editor
             var runtimeObject = new GameObject(adrFileName.Split(".")[0]) {
                 transform =
                 {
-                    parent = parentObject.transform,
+                    parent = parentObject == null ? null : parentObject.transform,
                     localPosition = position,
                     localScale = Vector3.one * scale,
                     localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg)
