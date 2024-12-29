@@ -4,10 +4,8 @@ Shader "Custom/DualTextureRigidGlowNoShadow"
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _Diffuse2("Diffuse2", 2D) = "white" {}
+        _Tint("Tint", Color) = (1, 1, 1, 1)
         _Glow("Glow", Float) = 0.0
-        _TextureClamp("TextureClamp", Integer) = 0
-        _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
     }
     SubShader
     {
@@ -18,26 +16,33 @@ Shader "Custom/DualTextureRigidGlowNoShadow"
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard
-
+        #pragma surface surf BlinnPhong
+	
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
-        float4 _TintSemantic;
+        float4 _Tint;
+		float _Glow;
 
         struct Input
         {
             float2 uv_Diffuse;
-            float2 uv_Diffuse2;
+            float2 uv2_Diffuse2;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutput o)
         {
-            float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
-            o.Albedo = c.rgb;
-
-            o.Emission = c.rgb * tex2D(_Diffuse, IN.uv_Diffuse).a;
+            float4 texture0 = tex2D(_Diffuse, IN.uv_Diffuse);
+            float4 texture1 = tex2D(_Diffuse2, IN.uv2_Diffuse2);
+			float3 tint_color = texture0.rgb * _Tint;
+            o.Albedo = lerp(tint_color, texture1.rgb, texture1.a);
+			
+			float3 glow_color = texture0.rgb * texture0.a;
+			glow_color *= _Glow * 1;
+            o.Emission = glow_color;
+			o.Specular = .5;
+			o.Gloss = 1;
         }
-
         ENDCG
     }
+	Fallback "Diffuse"
 }

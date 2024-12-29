@@ -20,7 +20,7 @@ Shader "Custom/SimpleRigidAlphaTest"
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard fullforwardshadows addshadow alphatest:_Cutoff
+        #pragma surface surf BlinnPhong fullforwardshadows addshadow alphatest:_Cutoff
 
         sampler2D _Diffuse;
 
@@ -29,12 +29,14 @@ Shader "Custom/SimpleRigidAlphaTest"
             float2 uv_Diffuse;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutput o)
         {
             float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
             o.Albedo = c.rgb;
             o.Alpha = c.a;
-        }
+        	o.Specular = 0.5;
+			o.Gloss = 1;
+		}
 
         ENDCG
     }

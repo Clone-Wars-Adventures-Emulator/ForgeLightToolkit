@@ -12,14 +12,14 @@ Shader "Custom/LightBeam"
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
+        Tags { "Queue" = "AlphaTest" "RenderType" = "Transparent" }
         LOD 200
         Cull Off
 
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard fullforwardshadows alpha
+        #pragma surface surf StandardSpecular fullforwardshadows alpha:fade
 
         float4 _TintSemantic;
         float _Intensity;
@@ -31,11 +31,11 @@ Shader "Custom/LightBeam"
             float2 uv_GradientTexture;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutputStandardSpecular o)
         {
             float4 c = tex2D(_GradientTexture, IN.uv_GradientTexture);
-            o.Albedo = c.rgb * _TintSemantic;
-            o.Alpha = c.rgb * c.a * _Intensity;
+            o.Albedo = c.a * _TintSemantic * 1;
+            o.Alpha = (c.a * _Intensity) * _TintSemantic.a;
         }
 
         ENDCG

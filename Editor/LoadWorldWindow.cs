@@ -234,6 +234,7 @@ namespace ForgeLightToolkit.Editor
             GUILayout.EndArea();
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private void LoadWorld(string worldName) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
 
@@ -356,7 +357,7 @@ namespace ForgeLightToolkit.Editor
                                 }
                             };
 
-                            var lightComp = lightObject.AddComponent<Light>();
+                            Light lightComp = lightObject.AddComponent<Light>();
 
                             lightComp.range = rawLight.Range;
                             lightComp.color = rawLight.Color;
@@ -372,6 +373,7 @@ namespace ForgeLightToolkit.Editor
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation) {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
