@@ -6,7 +6,7 @@ Shader "Custom/SimpleRigidNoShadow"
         _ScrollV("ScrollV", Float) = 0.0
         _ScrollU("ScrollU", Float) = 0.0
         _Glow("Glow", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (1, 1, 1, 1)
         _FadeStencil("FadeStencil", Integer) = 0
         _DoubleSidedDefaultFalse("DoubleSidedDefaultFalse", Integer) = 0
     }
@@ -14,26 +14,43 @@ Shader "Custom/SimpleRigidNoShadow"
     {
         Tags { "RenderType" = "Opaque" }
         LOD 200
-        Cull Front
+        Cull Off
 
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard
+        #pragma surface surf BlinnPhong
 
         sampler2D _Diffuse;
+        float _ScrollU;
+        float _ScrollV;
+        float4 _Tint;
+        float _Glow;
 
         struct Input
         {
             float2 uv_Diffuse;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutput o)
         {
-            float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
-            o.Albedo = c.rgb;
+            float2 scroll = IN.uv_Diffuse;
 
-            o.Emission = c.rgb * tex2D(_Diffuse, IN.uv_Diffuse).a;
+            float scrollU = _ScrollU * _Time * 5.0;
+            float scrollV = _ScrollV * _Time * 5.0;
+
+            scroll += float2(scrollU, scrollV);
+
+            float4 texture0 = tex2D(_Diffuse, scroll);
+
+            float3 tint_color = texture0.rgb * _Tint;
+            o.Albedo = lerp(tint_color, texture0.rgb, texture0.a);
+            
+            float3 glow_color = texture0.rgb * texture0.a;
+            glow_color *= _Glow * 1;
+            o.Emission = glow_color; //texture0.rgb * tex2D(_Diffuse, scroll);
+            o.Specular = .5;
+            o.Gloss = 1;
         }
 
         ENDCG

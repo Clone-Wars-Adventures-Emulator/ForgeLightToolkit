@@ -4,25 +4,22 @@ Shader "Custom/DualTextureRigid"
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _Diffuse2("Diffuse2", 2D) = "white" {}
-        _Glow("Glow", Float) = 0.0
-        _TextureClamp("TextureClamp", Integer) = 0
-        _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
         LOD 200
-        Cull Front
+        Cull Off
 
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard fullforwardshadows addshadow
-
+        #pragma surface surf BlinnPhong fullforwardshadows addshadow
+    
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {
@@ -30,14 +27,17 @@ Shader "Custom/DualTextureRigid"
             float2 uv2_Diffuse2;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutput o)
         {
-            float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
-            float4 c2 = tex2D(_Diffuse2, IN.uv2_Diffuse2);
-            o.Albedo = lerp(c, c2, c2.a);
-            o.Alpha = c;
+            float4 texture0 = tex2D(_Diffuse, IN.uv_Diffuse);
+            float4 texture1 = tex2D(_Diffuse2, IN.uv2_Diffuse2);
+            float3 tint_color = texture0.rgb * _Tint;
+            o.Albedo = lerp(tint_color, texture1.rgb, texture1.a);
+            o.Specular = .5;
+            o.Gloss = 1;
         }
 
         ENDCG
     }
+    Fallback "Diffuse"
 }

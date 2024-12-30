@@ -1,25 +1,30 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEditor;
 using UnityEngine;
-
 using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
-using ForgeLightToolkit.Editor.FileTypes.Map;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 
 namespace ForgeLightToolkit.Editor
 {
     public class LoadWorldWindow : EditorWindow
     {
-        private string _worldName = "FabledRealms";
-        private string _assetsPath = "Assets/ForgeLight/FreeRealms";
+        private string worldName = "";
+        private string adrName = "";
+        private string assetsPath = "Assets/ExtractedPacks";
+        private string prefabSavePath = "Assets/Prefabs/Objects";
+        private string materialsSavePath = "Assets/Materials";
+        private string terrainMaterialsSavePath = "Assets/TerrainMaterials";
+        private string worldPrefabSavePath = "Assets/Prefabs/Worlds";
 
-        private bool _loadLights = true;
-        private bool _loadObjects = true;
-        private bool _loadRoadMap = true;
+        private bool _fastMode = false;
+        private bool _overrideTerrainMaterials;
+        private bool _overrideWorldPrefabsAndMats;
+
+        private HashSet<string> objectsAlreadyProcessed;
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow()
@@ -31,93 +36,162 @@ namespace ForgeLightToolkit.Editor
         {
             GUILayout.BeginArea(new Rect(0, 0, Screen.width / EditorGUIUtility.pixelsPerPoint, Screen.height / EditorGUIUtility.pixelsPerPoint));
 
-            GUILayout.Space(20);
+            GUILayout.Space(15);
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
+            GUILayout.Space(15);
             GUILayout.Label("Assets Path", EditorStyles.boldLabel);
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            GUILayout.Label("Example: Assets/ForgeLight/FreeRealms", EditorStyles.miniBoldLabel);
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
+            GUILayout.Label("Example: Assets/ForgeLight/CloneWarsAdventures", EditorStyles.miniBoldLabel);
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            _assetsPath = EditorGUILayout.TextField(_assetsPath, GUILayout.ExpandWidth(false));
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
+            assetsPath = EditorGUILayout.TextField(assetsPath);
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(10);
+            GUILayout.Space(15);
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
+            GUILayout.Label("Object Prefab Save Location", EditorStyles.boldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("Example: Assets/Prefabs/Objects", EditorStyles.miniBoldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            prefabSavePath = EditorGUILayout.TextField(prefabSavePath);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("World Prefab Save Location", EditorStyles.boldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("Example: Assets/Prefabs/Worlds", EditorStyles.miniBoldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            worldPrefabSavePath = EditorGUILayout.TextField(worldPrefabSavePath);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("Terrain Materials Save Location", EditorStyles.boldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("Example: Assets/TerrainMaterials", EditorStyles.miniBoldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            terrainMaterialsSavePath = EditorGUILayout.TextField(terrainMaterialsSavePath);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("Object Materials Save Location", EditorStyles.boldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            GUILayout.Label("Example: Assets/Materials", EditorStyles.miniBoldLabel);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            materialsSavePath = EditorGUILayout.TextField(materialsSavePath);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
             GUILayout.Label("World Name", EditorStyles.boldLabel);
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            GUILayout.Label("Example: FabledRealms", EditorStyles.miniBoldLabel);
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
+            GUILayout.Label("Example: JediTemple", EditorStyles.miniBoldLabel);
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            _worldName = EditorGUILayout.TextField(_worldName, GUILayout.ExpandWidth(false));
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
+            worldName = EditorGUILayout.TextField(worldName);
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(10);
+            GUILayout.Space(15);
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            _loadLights = GUILayout.Toggle(_loadLights, "Lights");
-
-            GUILayout.Space(10);
-
-            _loadObjects = GUILayout.Toggle(_loadObjects, "Objects");
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(15);
+            GUILayout.Label(
+                "Please read the tooltips on the following boxes " +
+                "to ensure you know what you are doing before " +
+                "you run with any of the options selected.", EditorStyles.wordWrappedLabel);
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(10);
-
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            _loadRoadMap = GUILayout.Toggle(_loadRoadMap, "Road Map (FR Only)");
-
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(25);
+            _fastMode = GUILayout.Toggle(_fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
+            GUILayout.Space(15);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(10);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(25);
+            _overrideTerrainMaterials = GUILayout.Toggle(_overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
+            GUILayout.Space(25);
+            _overrideWorldPrefabsAndMats = GUILayout.Toggle(_overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
+            GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Load All Worlds", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(_assetsPath))
-            {
-                var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{_assetsPath}/*.gzne\"");
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(25);
+            if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+                var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{worldName}.gzne\"");
 
-                foreach (var gzneFileAssetGuid in gzneFileAssetGuids)
-                {
+                objectsAlreadyProcessed = new HashSet<string>();
+
+                foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
                     var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
 
                     var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
@@ -125,35 +199,59 @@ namespace ForgeLightToolkit.Editor
                     if (gzneFile is null)
                         continue;
 
-                    LoadWorld(gzneFile.name, _assetsPath, _loadObjects, _loadLights, _loadRoadMap);
+                    LoadWorld(gzneFile.name);
                 }
             }
-
-            if (GUILayout.Button("Load World", GUILayout.ExpandWidth(false))
-                && !string.IsNullOrEmpty(_worldName) && !string.IsNullOrEmpty(_assetsPath))
-                LoadWorld(_worldName, _assetsPath, _loadObjects, _loadLights, _loadRoadMap);
-
-            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+            GUILayout.Space(15);
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            adrName = EditorGUILayout.TextField(adrName);
+            GUILayout.Space(15);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(25);
+            if (GUILayout.Button("Load Adr(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+                var adrFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{adrName}.adr\"");
+
+                objectsAlreadyProcessed = new HashSet<string>();
+
+                foreach (var adrFileAssetGuid in adrFileAssetGuids) {
+                    var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
+
+                    var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
+
+                    if (adrFile is null)
+                        continue;
+
+                    LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0,0,0,0), 1.0f, new Vector4(0,0,0,0));
+                }
+            }
+            GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
 
-        private void LoadWorld(string worldName, string assetsPath, bool loadObjects, bool loadLights, bool loadRoadMap)
-        {
-            var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>($"{assetsPath}/{worldName}.gzne");
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void LoadWorld(string worldName) {
+            GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
 
             if (gzneFile is null)
                 return;
 
-            var worldObject = new GameObject($"World ({worldName})");
+            GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
+            if (loadedWorldObject is not null && !_overrideWorldPrefabsAndMats && !_fastMode) {
+                PrefabUtility.InstantiatePrefab(loadedWorldObject);
+                return;
+            }
+            GameObject worldObject = new GameObject($"World_{worldName}");
 
-            var loadedRuntimeObjects = new Dictionary<int, RuntimeObject>();
+            Dictionary<int, RuntimeObject> loadedRuntimeObjects = new Dictionary<int, RuntimeObject>();
 
-            for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis)
-            {
-                for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis)
-                {
+            for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
+                for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
                     var chunkFileName = $"{worldName}_{x}_{y}";
 
                     var gcnkFilePath = Path.Combine(assetsPath, $"{chunkFileName}.gcnk");
@@ -163,16 +261,14 @@ namespace ForgeLightToolkit.Editor
                     if (gcnkFile is null)
                         continue;
 
-                    var chunkObject = new GameObject($"Chunk ({gcnkFile.Coords.x}, {gcnkFile.Coords.y})")
-                    {
+                    var chunkObject = new GameObject($"Chunk ({gcnkFile.Coords.x}, {gcnkFile.Coords.y})") {
                         transform =
                         {
                             parent = worldObject.transform
                         }
                     };
 
-                    if (!gzneFile.HideTerrain)
-                    {
+                    if (!gzneFile.HideTerrain) {
                         var chunkMeshFilter = chunkObject.AddComponent<MeshFilter>();
 
                         chunkMeshFilter.sharedMesh = gcnkFile.Mesh;
@@ -185,21 +281,24 @@ namespace ForgeLightToolkit.Editor
 
                         var gck2File = AssetDatabase.LoadAssetAtPath<Gck2File>(gck2FilePath);
 
-                        foreach (var tile in gcnkFile.Tiles)
-                        {
-                            var chunkMaterial = new Material(Shader.Find($"Custom/RuntimeTerrain_{tile.EcoDataList.Count}"))
-                            {
+                        foreach (var tile in gcnkFile.Tiles) {
+                            Material loadedChunkMaterial = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
+                            var chunkMaterial = new Material(Shader.Find($"Custom/RuntimeTerrain_{tile.EcoDataList.Count}")) {
                                 name = $"Tile {tile.Index}"
                             };
 
+                            if (loadedChunkMaterial is not null && ! _overrideTerrainMaterials && !_fastMode) {
+                                chunkMaterial = loadedChunkMaterial;
+                                chunkMaterials[tile.Index] = chunkMaterial;
+                                continue;
+                            }
                             if (gck2File is not null)
                                 chunkMaterial.mainTexture = gck2File.Texture;
 
                             if (gcnkFile.DetailMask is not null)
                                 chunkMaterial.SetTexture("_DetailMaskMap", gcnkFile.DetailMask);
 
-                            for (var i = 0; i < tile.EcoDataList.Count; i++)
-                            {
+                            for (var i = 0; i < tile.EcoDataList.Count; i++) {
                                 var ecoDataIndex = tile.EcoDataList[i];
                                 var ecoData = gzneFile.EcoData[ecoDataIndex];
 
@@ -211,168 +310,111 @@ namespace ForgeLightToolkit.Editor
 
                                 chunkMaterial.SetTexture($"_DetailColorMap{i}", ecoDataTexture2d);
                             }
-
+                            if (!_fastMode) {
+                                AssetDatabase.CreateAsset(chunkMaterial, Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
+                            }
                             chunkMaterials[tile.Index] = chunkMaterial;
                         }
-
                         chunkMeshRenderer.materials = chunkMaterials;
                     }
 
-                    foreach (var tile in gcnkFile.Tiles)
-                    {
-                        if (loadObjects)
-                        {
-                            foreach (var runtimeObject in tile.RuntimeObjects)
-                            {
-                                if (runtimeObject.Unknown > 0)
-                                {
-                                    if (!loadedRuntimeObjects.TryAdd(runtimeObject.Unknown, runtimeObject))
-                                        continue;
+                    foreach (var tile in gcnkFile.Tiles) {
+                        foreach (var runtimeObject in tile.RuntimeObjects) {
+                            if (runtimeObject.Unknown > 0) {
+                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.Unknown, runtimeObject))
+                                    continue;
+                            } else {
+                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.ObjectId, runtimeObject))
+                                    continue;
+                            }
+
+                            var fileExtension = Path.GetExtension(runtimeObject.FileName);
+
+                            if (fileExtension == ".adr") {
+                                LoadAdrFile(runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
+                            } else if (fileExtension == ".agr") {
+                                var agrFilePath = Path.Combine(assetsPath, runtimeObject.FileName);
+
+                                var agrFile = AssetDatabase.LoadAssetAtPath<AgrFile>(agrFilePath);
+
+                                if (agrFile is null) {
+                                    Debug.LogError($"Failed to load Agr. {agrFilePath}");
+                                    continue;
                                 }
-                                else
-                                {
-                                    if (!loadedRuntimeObjects.TryAdd(runtimeObject.ObjectId, runtimeObject))
-                                        continue;
-                                }
 
-                                var fileExtension = Path.GetExtension(runtimeObject.FileName);
-
-                                if (fileExtension == ".adr")
-                                {
-                                    LoadAdrFile(assetsPath, runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
-                                }
-                                else if (fileExtension == ".agr")
-                                {
-                                    var agrFilePath = Path.Combine(assetsPath, runtimeObject.FileName);
-
-                                    var agrFile = AssetDatabase.LoadAssetAtPath<AgrFile>(agrFilePath);
-
-                                    if (agrFile is null)
-                                    {
-                                        Debug.LogError($"Failed to load Agr. {agrFilePath}");
-                                        continue;
-                                    }
-
-                                    foreach (var actor in agrFile.ActorSet.Actors)
-                                    {
-                                        LoadAdrFile(assetsPath, actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.FileName);
-                                    }
+                                foreach (var actor in agrFile.ActorSet.Actors) {
+                                    LoadAdrFile(actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
                                 }
                             }
                         }
 
-                        if (loadLights)
-                        {
-                            foreach (var rawLight in tile.RawLights)
-                            {
-                                var lightObject = new GameObject($"Light ({rawLight.Name})")
-                                {
-                                    transform =
-                                    {
-                                        parent = chunkObject.transform,
-                                        position = rawLight.Position
-                                    }
-                                };
-
-                                var lightComp = lightObject.AddComponent<Light>();
-
-                                lightComp.range = rawLight.Range;
-                                lightComp.color = rawLight.Color;
-                                lightComp.intensity = rawLight.Intensity;
-                                lightComp.lightmapBakeType = LightmapBakeType.Baked;
-                            }
-                        }
-                    }
-                }
-
-                if (loadRoadMap)
-                {
-                    var mapFilePath = Path.Combine(assetsPath, $"{worldName}.map");
-
-                    var mapFile = AssetDatabase.LoadAssetAtPath<MapFile>(mapFilePath);
-
-                    if (mapFile is not null)
-                    {
-                        var roadMapObject = new GameObject("Road Map")
-                        {
-                            transform =
-                            {
-                                parent = worldObject.transform
-                            }
-                        };
-
-                        foreach (var node in mapFile.Nodes)
-                        {
-                            var nodeObject = new GameObject($"Node ({node.Id})")
-                            {
+                        foreach (var rawLight in tile.RawLights) {
+                            var lightObject = new GameObject($"Light ({rawLight.Name})") {
                                 transform =
                                 {
-                                    position = node.Position,
-                                    parent = roadMapObject.transform
+                                    parent = chunkObject.transform,
+                                    position = rawLight.Position
                                 }
                             };
 
-                            var nodeRenderer = nodeObject.AddComponent<NodeRenderer>();
+                            Light lightComp = lightObject.AddComponent<Light>();
 
-                            nodeRenderer.Parent = node;
-
-                            foreach (var edge in node.Edges)
-                            {
-                                var edgeNode = mapFile.Nodes.FirstOrDefault(x => x.Id == edge.Id);
-
-                                nodeRenderer.EdgeNodes.Add(edgeNode);
-                            }
+                            lightComp.range = rawLight.Range;
+                            lightComp.color = rawLight.Color;
+                            lightComp.intensity = rawLight.Intensity;
+                            lightComp.lightmapBakeType = LightmapBakeType.Baked;
                         }
                     }
                 }
             }
-
             worldObject.transform.localScale = new Vector3(1, 1, -1);
+            if (!_fastMode) {
+                PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
+            }
         }
 
-        private void LoadAdrFile(string assetsPath, string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, string agrFileName = null)
-        {
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation) {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
-
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
+            var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
+            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !_fastMode) {
+                GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
+                loadedObject.transform.localPosition = position;
+                loadedObject.transform.localScale = Vector3.one * scale;
+                loadedObject.transform.localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg);
+                return;
+            }
 
-            if (adrFile is null)
-            {
+            if (adrFile is null) {
                 Debug.LogError($"Failed to load Adr. {adrFilePath}");
                 return;
             }
 
-            if (adrFile.ModelFileName is null)
-            {
+            if (adrFile.ModelFileName is null) {
                 Debug.LogError($"Adr has no model file name. {adrFilePath}");
                 return;
             }
 
             var dmeFilePath = Path.Combine(assetsPath, adrFile.ModelFileName);
-
             var dmeFile = AssetDatabase.LoadAssetAtPath<DmeFile>(dmeFilePath);
-
-            if (dmeFile is null)
-            {
+            if (dmeFile is null) {
                 Debug.LogError($"Failed to load Dme. {dmeFilePath}");
                 return;
             }
 
-            var runtimeObject = new GameObject($"Object ({agrFileName ?? adrFileName})")
-            {
+            var runtimeObject = new GameObject(adrFileName.Split(".")[0]) {
                 transform =
                 {
-                    parent = parentObject.transform,
+                    parent = parentObject == null ? null : parentObject.transform,
                     localPosition = position,
                     localScale = Vector3.one * scale,
                     localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg)
                 }
             };
 
-            foreach (var meshEntry in dmeFile.Meshes)
-            {
-                var meshObject = new GameObject()
-                {
+            foreach (var meshEntry in dmeFile.Meshes) {
+                var meshObject = new GameObject() {
                     transform =
                     {
                         parent = runtimeObject.transform,
@@ -383,60 +425,61 @@ namespace ForgeLightToolkit.Editor
                 };
 
                 var objectMeshFilter = meshObject.AddComponent<MeshFilter>();
-
                 objectMeshFilter.sharedMesh = meshEntry.Mesh;
-
                 var objectMeshRenderer = meshObject.AddComponent<MeshRenderer>();
-
                 var materialEntry = dmeFile.DmaFile.MaterialEntries[meshEntry.MaterialIndex];
-
                 var materialDefinition = MaterialInfo.Instance.MaterialDefinitions.FirstOrDefault(x => x.NameHash == materialEntry.Hash);
-
                 if (materialDefinition is null)
                     continue;
 
-                meshObject.name = materialDefinition.Name;
-
                 var materialShader = Shader.Find($"Custom/{materialDefinition.Name}");
 
-                if (materialShader is null)
-                {
+                if (materialShader is null) {
                     Debug.LogWarning($"Missing Shader \"{materialDefinition.Name}\" for Object \"{adrFileName}\".");
                     continue;
                 }
 
-                var objectMaterial = new Material(materialShader);
+                Material objectMaterial = new Material(materialShader);
 
-                foreach (var parameterEntry in materialEntry.ParameterEntries)
-                {
+                var matFileName = "";
+                Material loadedMat = null;
+
+                foreach (var parameterEntry in materialEntry.ParameterEntries) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !_fastMode) {
+                        var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
+                        if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
+                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
+                        loadedMat = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(materialsSavePath, matFileName));
+                    }
+                }
+
+                if (loadedMat != null) {
+                    objectMeshRenderer.material = loadedMat;
+                    meshObject.name = meshEntry.Mesh.name;
+                    continue;
+                }
+
+                foreach (var parameterEntry in materialEntry.ParameterEntries) {
                     var parameterName = $"_{(ParameterName)parameterEntry.Hash}";
 
                     if (!objectMaterial.HasProperty(parameterName))
                         Debug.LogWarning($"{materialDefinition.Name}\t{parameterName}\t{parameterEntry.Class}\t{parameterEntry.Type}\t{parameterEntry.Int}\t{parameterEntry.Float}\t{parameterEntry.Vector4}\t{parameterEntry.Matrix4x4}\t{parameterEntry.Object}");
 
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_SCALAR)
-                    {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_SCALAR) {
                         if (parameterEntry.Type == D3DXPARAMETER_TYPE.D3DXPT_FLOAT)
                             objectMaterial.SetFloat(parameterName, parameterEntry.Float);
                         else
                             objectMaterial.SetInteger(parameterName, parameterEntry.Int);
-                    }
-                    else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_VECTOR)
-                    {
+                    } else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_VECTOR) {
                         objectMaterial.SetVector(parameterName, parameterEntry.Vector4);
-                    }
-                    else if (parameterEntry.Class is D3DXPARAMETER_CLASS.D3DXPC_MATRIX_ROWS or D3DXPARAMETER_CLASS.D3DXPC_MATRIX_COLUMNS)
-                    {
+                    } else if (parameterEntry.Class is D3DXPARAMETER_CLASS.D3DXPC_MATRIX_ROWS or D3DXPARAMETER_CLASS.D3DXPC_MATRIX_COLUMNS) {
                         objectMaterial.SetMatrix(parameterName, parameterEntry.Matrix4x4);
-                    }
-                    else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT)
-                    {
+                    } else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT) {
                         var textureHash = parameterEntry.Object;
 
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == textureHash);
 
-                        if (textureName is null)
-                        {
+                        if (textureName is null) {
                             Debug.LogError($"Failed to find texture. {textureHash}");
                             continue;
                         }
@@ -445,18 +488,35 @@ namespace ForgeLightToolkit.Editor
 
                         var texture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFilePath);
 
-                        if (texture2d is null)
-                        {
+                        if (texture2d is null) {
                             Debug.LogError($"Failed to find texture. {textureFilePath}");
                             continue;
                         }
 
                         objectMaterial.SetTexture(parameterName, texture2d);
                         objectMaterial.SetTextureScale(parameterName, Vector2.right + Vector2.down);
+
+                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
+                        objectMaterial.name = textureName.Split(".")[0];
                     }
                 }
+                if (matFileName == "") {
+                    matFileName = "See_LoadWorldWindow_Line_476.mat";
+                }
+                if (!_fastMode) {
+                    AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
+                }
+                meshObject.name = meshEntry.Mesh.name;
+                matFileName = "";
 
                 objectMeshRenderer.material = objectMaterial;
+            }
+
+            objectsAlreadyProcessed.Add(runtimeObject.name);
+            if (!_fastMode) {
+                runtimeObject.transform.localScale = Vector3.one;
+                PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
+                runtimeObject.transform.localScale = Vector3.one * scale;
             }
         }
     }

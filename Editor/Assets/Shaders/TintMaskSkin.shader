@@ -6,13 +6,13 @@ Shader "Custom/TintMaskSkin"
         _Bias("Bias", Integer) = 0
         _DoubleSided("DoubleSided", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
     }
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
         LOD 200
-        Cull Front
+        Cull Off
 
         CGPROGRAM
 
@@ -21,7 +21,7 @@ Shader "Custom/TintMaskSkin"
 
         sampler2D _Diffuse;
         sampler2D _TintMask;
-        float4 _TintSemantic;
+        fixed4 _Tint;
 
         struct Input
         {
@@ -30,9 +30,11 @@ Shader "Custom/TintMaskSkin"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
-            o.Albedo = c.rgb;
-            o.Alpha = c.a;
+            fixed4 baseTexture = tex2D(_Diffuse, IN.uv_Diffuse);
+            fixed3 tintedColor = (baseTexture.a * _Tint.xyz) - baseTexture.rgb;
+            fixed3 baseColor = baseTexture.a + baseTexture.xyz;
+            o.Albedo = baseTexture.rgb;
+            o.Alpha = tintedColor;
         }
 
         ENDCG

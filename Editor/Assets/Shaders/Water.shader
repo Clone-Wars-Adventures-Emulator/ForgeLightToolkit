@@ -2,6 +2,7 @@ Shader "Custom/Water"
 {
     Properties
     {
+        _Cube ("Reflection Map", CUBE) = "" {}
         _Glow("Glow", Float) = 0
         _Density("Density", Float) = 0
         _Fresnel("Fresnel", Float) = 0
@@ -38,9 +39,12 @@ Shader "Custom/Water"
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard alpha
+        #pragma surface surf StandardSpecular alpha
 
         float4 _TintSemantic;
+        float _Reflection;
+        samplerCUBE _Cube;
+        float _Glow;
 
         float _TexScale1;
         float _TexScrollX1;
@@ -60,10 +64,17 @@ Shader "Custom/Water"
         struct Input
         {
             float2 uv_BumpMap1;
+            float3 worldRefl;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutputStandardSpecular o)
         {
+            float3 glow_color = _TintSemantic.rgb;
+            glow_color *= _Glow * 1;
+            
+            float3 texturecube0 = texCUBE (_Cube, IN.worldRefl);
+            float3 reflection_intensity = (texturecube0.rgb + _TintSemantic.rgb) * _Reflection;
+            
             float2 texScroll1 = IN.uv_BumpMap1;
             float2 texScroll2 = IN.uv_BumpMap1;
             float2 texScroll3 = IN.uv_BumpMap1;
@@ -89,10 +100,12 @@ Shader "Custom/Water"
             float3 b2 = UnpackNormal(n2);
             float3 b3 = UnpackNormal(n3);
 
-            o.Normal = b1;
-
-            o.Albedo = _TintSemantic.rgb;
-            o.Alpha = 0.5;
+            o.Normal = (b1 + b2 + b3);
+            
+            o.Emission = glow_color * .1;
+            o.Albedo = _TintSemantic.rgb / 3;
+            o.Alpha = _TintSemantic.a;
+            o.Specular = _Reflection * 0.015;
         }
 
         ENDCG

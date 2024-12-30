@@ -11,7 +11,7 @@ Shader "Custom/LightBeamSkin"
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
+        Tags { "Queue" = "AlphaTest" "RenderType" = "Transparent" }
         LOD 200
         Cull Off
 

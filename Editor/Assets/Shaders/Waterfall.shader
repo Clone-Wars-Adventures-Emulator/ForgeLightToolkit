@@ -31,7 +31,7 @@ Shader "Custom/Waterfall"
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard fullforwardshadows alpha
+        #pragma surface surf StandardSpecular fullforwardshadows alpha
 
             float _Glow;
 
@@ -54,7 +54,7 @@ Shader "Custom/Waterfall"
             float2 uv_Texture1;
         };
 
-        void surf(Input IN, inout SurfaceOutputStandard o)
+        void surf(Input IN, inout SurfaceOutputStandardSpecular o)
         {
             float2 texScroll1 = IN.uv_Texture1;
             float2 maskScroll1 = IN.uv_Texture1;
@@ -79,9 +79,12 @@ Shader "Custom/Waterfall"
 
             float4 m = tex2D(_Mask1, texScroll2 * _MaskScale1);
             float4 m2 = tex2D(_Mask2, maskScroll2 * _MaskScale2);
-
-            o.Albedo = lerp(c.rgb, c2.rgb, 0.5);
-            o.Alpha = lerp(m.rgb, m.rgb, 0.5);
+            
+            float3 glow_color = c.rgb * m.a;
+            glow_color *= _Glow * 1;
+            o.Emission = glow_color * 1;
+            o.Albedo = lerp(c.rgb, c2.rgb, 0.66);
+            o.Alpha = lerp(m.rgb, c2.rgb, .75);
         }
 
         ENDCG

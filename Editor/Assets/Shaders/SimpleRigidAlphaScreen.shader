@@ -11,27 +11,32 @@ Shader "Custom/SimpleRigidAlphaScreen"
     }
     SubShader
     {
-        Tags { "Queue" = "AlphaTest" "RenderType" = "TransparentCutout" }
+        Tags { "Queue" = "AlphaTest" "RenderType" = "Transparent" }
         LOD 200
-        Cull Front
+        Cull Off
 
         CGPROGRAM
 
         #pragma target 3.0
-        #pragma surface surf Standard fullforwardshadows addshadow
+        #pragma surface surf StandardSpecular fullforwardshadows addshadow alpha
 
         sampler2D _Diffuse;
+        float _Glow;
 
         struct Input
         {
             float2 uv_Diffuse;
         };
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
+        void surf (Input IN, inout SurfaceOutputStandardSpecular o)
         {
-            float4 c = tex2D (_Diffuse, IN.uv_Diffuse);
-            o.Albedo = c.rgb;
-            o.Alpha = c.a;
+            float4 texture0 = tex2D (_Diffuse, IN.uv_Diffuse);
+            float3 glow_color = texture0.rgb * texture0.a;
+            glow_color *= _Glow;
+            o.Albedo = texture0.rgb;
+            o.Alpha = texture0.a/1.33;
+            o.Specular = 0.5;
+            o.Emission = glow_color;
         }
 
         ENDCG

@@ -20,11 +20,14 @@ A Unity package that imports ForgeLight assets within Unity.
 
 1. Ensuring you have git installed, open the Unity Package Manager.
 2. Click the `+` button and choose `Add package from git URL...`
-3. Enter the current repository git URL. `https://github.com/EDITzDev/ForgeLightToolkit.git`
-4. Create the folowing folder structure `Assets/ForgeLight/<game>`, Eg: `Assets/ForgeLight/FreeRealms`
+3. Enter the current repository git URL. `https://github.com/Clone-Wars-Adventures-Emulator/ForgeLightToolkit.git`
+4. Create the following folder structure `Assets/ForgeLight/<game>`, Eg: `Assets/ForgeLight/FreeRealms`
 5. Copy all or relevant assets to the folder you created, this can take a few minutes.
 
 ## Features
 
 * Load World (WIP) - Loads the `.gzne` and all available `.gcnk` files for the chosen world including all the objects and lights (if enabled).
 * Load All Worlds (WIP) - Loads all the available `.gzne` and `.gcnk` files for the chosen world including all the objects and lights (if enabled).
+
+## Default Shaders
+The provided shaders are example shaders based on the inputs of the equivalent ForgeLight shaders. They are not perfect recreations. The provided shaders also have culling disabled. To enable "backface" culling, every shader's `Cull Off` line should be changed to either `Cull Front` or `Cull Back`, which ever looks correct.
