@@ -17,11 +17,11 @@ Shader "Custom/DualTextureRigidGlowNoShadow"
 
         #pragma target 3.0
         #pragma surface surf BlinnPhong
-	
+    
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
         float4 _Tint;
-		float _Glow;
+        float _Glow;
 
         struct Input
         {
@@ -33,16 +33,16 @@ Shader "Custom/DualTextureRigidGlowNoShadow"
         {
             float4 texture0 = tex2D(_Diffuse, IN.uv_Diffuse);
             float4 texture1 = tex2D(_Diffuse2, IN.uv2_Diffuse2);
-			float3 tint_color = texture0.rgb * _Tint;
+            float3 tint_color = texture0.rgb * _Tint;
             o.Albedo = lerp(tint_color, texture1.rgb, texture1.a);
-			
-			float3 glow_color = texture0.rgb * texture0.a;
-			glow_color *= _Glow * 1;
+            
+            float3 glow_color = texture0.rgb * texture0.a;
+            glow_color *= _Glow * 1;
             o.Emission = glow_color;
-			o.Specular = .5;
-			o.Gloss = 1;
+            o.Specular = .5;
+            o.Gloss = 1;
         }
         ENDCG
     }
-	Fallback "Diffuse"
+    Fallback "Diffuse"
 }

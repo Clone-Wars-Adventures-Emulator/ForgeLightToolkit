@@ -16,7 +16,7 @@ Shader "Custom/DualTextureRigid"
 
         #pragma target 3.0
         #pragma surface surf BlinnPhong fullforwardshadows addshadow
-	
+    
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
         float4 _Tint;
@@ -31,13 +31,13 @@ Shader "Custom/DualTextureRigid"
         {
             float4 texture0 = tex2D(_Diffuse, IN.uv_Diffuse);
             float4 texture1 = tex2D(_Diffuse2, IN.uv2_Diffuse2);
-			float3 tint_color = texture0.rgb * _Tint;
+            float3 tint_color = texture0.rgb * _Tint;
             o.Albedo = lerp(tint_color, texture1.rgb, texture1.a);
-			o.Specular = .5;
-			o.Gloss = 1;
+            o.Specular = .5;
+            o.Gloss = 1;
         }
 
         ENDCG
     }
-	Fallback "Diffuse"
+    Fallback "Diffuse"
 }

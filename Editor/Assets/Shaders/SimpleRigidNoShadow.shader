@@ -25,7 +25,7 @@ Shader "Custom/SimpleRigidNoShadow"
         float _ScrollU;
         float _ScrollV;
         float4 _Tint;
-		float _Glow;
+        float _Glow;
 
         struct Input
         {
@@ -44,14 +44,14 @@ Shader "Custom/SimpleRigidNoShadow"
             float4 texture0 = tex2D(_Diffuse, scroll);
 
             float3 tint_color = texture0.rgb * _Tint;
-			o.Albedo = lerp(tint_color, texture0.rgb, texture0.a);
-			
-			float3 glow_color = texture0.rgb * texture0.a;
-			glow_color *= _Glow * 1;
+            o.Albedo = lerp(tint_color, texture0.rgb, texture0.a);
+            
+            float3 glow_color = texture0.rgb * texture0.a;
+            glow_color *= _Glow * 1;
             o.Emission = glow_color; //texture0.rgb * tex2D(_Diffuse, scroll);
-			o.Specular = .5;
-			o.Gloss = 1;
-		}
+            o.Specular = .5;
+            o.Gloss = 1;
+        }
 
         ENDCG
     }

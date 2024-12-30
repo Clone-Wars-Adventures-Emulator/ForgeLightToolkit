@@ -34,9 +34,9 @@ Shader "Custom/SimpleRigidAlphaTest"
             float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
             o.Albedo = c.rgb;
             o.Alpha = c.a;
-        	o.Specular = 0.5;
-			o.Gloss = 1;
-		}
+            o.Specular = 0.5;
+            o.Gloss = 1;
+        }
 
         ENDCG
     }

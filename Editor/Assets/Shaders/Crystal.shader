@@ -24,10 +24,10 @@ Shader "Custom/Crystal"
 
         sampler2D _Diffuse;
         float _InsideGlow;
-		float _OutsideGlow;
+        float _OutsideGlow;
         float _InsideSpecular;
-		
-		struct Input
+        
+        struct Input
         {
             float2 uv_Diffuse;
         };
@@ -35,11 +35,11 @@ Shader "Custom/Crystal"
         void surf(Input IN, inout SurfaceOutputStandardSpecular o)
         {
             float4 texture0 = tex2D(_Diffuse, IN.uv_Diffuse);
-			float3 glow_color = texture0.rgb * texture0.a;
+            float3 glow_color = texture0.rgb * texture0.a;
             float inside_spec = texture0.rgb * texture0.a;
-			o.Albedo = texture0.rgb;
+            o.Albedo = texture0.rgb;
             o.Emission = glow_color;
-			o.Specular = .5 * inside_spec;
+            o.Specular = .5 * inside_spec;
             // TODO: Specular
         }
 

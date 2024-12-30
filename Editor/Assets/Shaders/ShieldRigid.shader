@@ -38,12 +38,12 @@ Shader "Custom/ShieldRigid"
 
         sampler2D _Diffuse;
         float3 _BaseColor;
-		float3 _InnerColor;
-		float3 _OuterColor;
-		
-		float _Bumpiness1;
+        float3 _InnerColor;
+        float3 _OuterColor;
+        
+        float _Bumpiness1;
         float _Bumpiness2;
-		
+        
         float _TexScale1;
         float _TexScrollX1;
         float _TexScrollZ1;
@@ -60,24 +60,24 @@ Shader "Custom/ShieldRigid"
         {
             float2 uv_Diffuse;
             float2 uv_BumpMap1;
-			float2 uv_BumpMap2;
-		};
+            float2 uv_BumpMap2;
+        };
 
         void surf(Input IN, inout SurfaceOutput o)
         {
             float2 texScroll1 = IN.uv_BumpMap1;
             float2 texScroll2 = IN.uv_BumpMap2;
-			
-			float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
-			float3 base_color = c.rgb * _BaseColor;
-			float3 inner_color = c.rgb * _InnerColor;
-			float3 outer_color = c.a * _OuterColor;
-			float4 n1 = tex2D(_BumpMap1, texScroll1);
+            
+            float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
+            float3 base_color = c.rgb * _BaseColor;
+            float3 inner_color = c.rgb * _InnerColor;
+            float3 outer_color = c.a * _OuterColor;
+            float4 n1 = tex2D(_BumpMap1, texScroll1);
             float4 n2 = tex2D(_BumpMap2, texScroll2);
-			
-			float bumpiness1 = n1;
-			float bumpiness2 = n2;
-			
+            
+            float bumpiness1 = n1;
+            float bumpiness2 = n2;
+            
             float texScrollX1 = _TexScrollX1 * _Time * 5.0;
             float texScrollZ1 = _TexScrollZ1 * _Time * 5.0;
 
@@ -86,20 +86,20 @@ Shader "Custom/ShieldRigid"
 
             float texScrollX0 = _TexScrollX0 * _Time * 5.0;
             float texScrollZ0 = _TexScrollZ0 * _Time * 5.0;
-			
-			texScroll1 += float2(texScrollX1, texScrollZ1);
+            
+            texScroll1 += float2(texScrollX1, texScrollZ1);
             texScroll2 += float2(texScrollX2, texScrollZ2);
-			
-			float3 b1 = UnpackNormal(n1);
+            
+            float3 b1 = UnpackNormal(n1);
             float3 b2 = UnpackNormal(n2);
-			
-			o.Normal = (b1 * bumpiness1) + (b2 * bumpiness2);
+            
+            o.Normal = (b1 * bumpiness1) + (b2 * bumpiness2);
             o.Albedo = c.rgb * _BaseColor + _InnerColor;
             o.Alpha = c.a * .4;
-			o.Emission = c.rgb;
-			o.Specular = 0.1 *_InnerColor;
-		    o.Gloss = 1 * _OuterColor;
-		}
+            o.Emission = c.rgb;
+            o.Specular = 0.1 *_InnerColor;
+            o.Gloss = 1 * _OuterColor;
+        }
 
         ENDCG
     }

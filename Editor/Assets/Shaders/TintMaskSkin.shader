@@ -21,7 +21,7 @@ Shader "Custom/TintMaskSkin"
 
         sampler2D _Diffuse;
         sampler2D _TintMask;
-		fixed4 _Tint;
+        fixed4 _Tint;
 
         struct Input
         {
@@ -30,7 +30,7 @@ Shader "Custom/TintMaskSkin"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-			fixed4 baseTexture = tex2D(_Diffuse, IN.uv_Diffuse);
+            fixed4 baseTexture = tex2D(_Diffuse, IN.uv_Diffuse);
             fixed3 tintedColor = (baseTexture.a * _Tint.xyz) - baseTexture.rgb;
             fixed3 baseColor = baseTexture.a + baseTexture.xyz;
             o.Albedo = baseTexture.rgb;

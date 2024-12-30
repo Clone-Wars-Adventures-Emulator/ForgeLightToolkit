@@ -10,7 +10,7 @@ Shader "Custom/SimpleRigid2"
         _FadeStencil("FadeStencil", Integer) = 0
         _DoubleSidedDefaultFalse("DoubleSidedDefaultFalse", Integer) = 0
         _Specular ("Specular", Float) = 0.5
-	}
+    }
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
@@ -26,9 +26,9 @@ Shader "Custom/SimpleRigid2"
         float _ScrollU;
         float _ScrollV;
         float4 _Tint;
-		float _Glow;
+        float _Glow;
         float _Specular;
-		
+        
         struct Input
         {
             float2 uv_Diffuse: TEXCOORD1;
@@ -46,14 +46,14 @@ Shader "Custom/SimpleRigid2"
             float4 texture0 = tex2D(_Diffuse, scroll);
 
             float3 tint_color = texture0.rgb * _Tint;
-			o.Albedo = float3(scroll.x, scroll.y, 0);
-			
-			float3 glow_color = texture0.rgb * texture0.a;
-			glow_color *= _Glow * 0.25;
+            o.Albedo = float3(scroll.x, scroll.y, 0);
+            
+            float3 glow_color = texture0.rgb * texture0.a;
+            glow_color *= _Glow * 0.25;
             o.Emission = glow_color; //texture0.rgb * tex2D(_Diffuse, scroll);
-			o.Specular = _Specular;
-			o.Gloss = 1;
-		}
+            o.Specular = _Specular;
+            o.Gloss = 1;
+        }
 
         ENDCG
     }
