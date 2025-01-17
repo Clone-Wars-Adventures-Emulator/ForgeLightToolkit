@@ -387,6 +387,16 @@ namespace ForgeLightToolkit.Editor {
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
                 loadedObject.transform.localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg);
+
+                if (!loadedObject.TryGetComponent<ForgelightObject>(out var forgelightObject)) {
+                    Debug.LogWarning($"Prefab for {adrFileName} was missing the ForgelightObject component. Adding a new instance");
+                    forgelightObject = loadedObject.AddComponent<ForgelightObject>();
+                    forgelightObject.AdrFileName = adrFileName;
+                }
+
+                // Runtime instance IDs of objects shouldnt be saved in the prefab, which means each instantiation needs it's id
+                forgelightObject.RuntimeObjectId = runtimeId;
+
                 return;
             }
 
@@ -415,6 +425,10 @@ namespace ForgeLightToolkit.Editor {
                     localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg)
                 }
             };
+
+            // add the runtime data for this object
+            var flo = runtimeObject.AddComponent<ForgelightObject>();
+            flo.AdrFileName = adrFileName;
 
             foreach (var meshEntry in dmeFile.Meshes) {
                 var meshObject = new GameObject() {
@@ -524,9 +538,7 @@ namespace ForgeLightToolkit.Editor {
                 runtimeObject.transform.localScale = Vector3.one * scale;
             }
 
-            // add the runtime data for this object
-            var flo = runtimeObject.AddComponent<ForgelightObject>();
-            flo.AdrFileName = adrFileName;
+            // only do this after the prefab has been saved, Runtime instance IDs of objects shouldnt be saved in that
             flo.RuntimeObjectId = runtimeId;
         }
 
