@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,11 +7,11 @@ using UnityEngine;
 using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
+using ForgeLightToolkit.Runtime;
+using System.Runtime.CompilerServices;
 
-namespace ForgeLightToolkit.Editor
-{
-    public class LoadWorldWindow : EditorWindow
-    {
+namespace ForgeLightToolkit.Editor {
+    public class LoadWorldWindow : EditorWindow {
         private string worldName = "";
         private string adrName = "";
         private string assetsPath = "Assets/ExtractedPacks";
@@ -27,13 +27,11 @@ namespace ForgeLightToolkit.Editor
         private HashSet<string> objectsAlreadyProcessed;
 
         [MenuItem("ForgeLight/Load World")]
-        public static void ShowWindow()
-        {
+        public static void ShowWindow() {
             GetWindow<LoadWorldWindow>("Load World");
         }
 
-        private void OnGUI()
-        {
+        private void OnGUI() {
             GUILayout.BeginArea(new Rect(0, 0, Screen.width / EditorGUIUtility.pixelsPerPoint, Screen.height / EditorGUIUtility.pixelsPerPoint));
 
             GUILayout.Space(15);
@@ -196,8 +194,9 @@ namespace ForgeLightToolkit.Editor
 
                     var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
 
-                    if (gzneFile is null)
+                    if (gzneFile is null) {
                         continue;
+                    }
 
                     LoadWorld(gzneFile.name);
                 }
@@ -224,10 +223,11 @@ namespace ForgeLightToolkit.Editor
 
                     var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
 
-                    if (adrFile is null)
+                    if (adrFile is null) {
                         continue;
+                    }
 
-                    LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0,0,0,0), 1.0f, new Vector4(0,0,0,0));
+                    LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, new Vector4(0, 0, 0, 0));
                 }
             }
             GUILayout.EndHorizontal();
@@ -238,8 +238,9 @@ namespace ForgeLightToolkit.Editor
         private void LoadWorld(string worldName) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
 
-            if (gzneFile is null)
+            if (gzneFile is null) {
                 return;
+            }
 
             GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
             if (loadedWorldObject is not null && !_overrideWorldPrefabsAndMats && !_fastMode) {
@@ -258,12 +259,12 @@ namespace ForgeLightToolkit.Editor
 
                     var gcnkFile = AssetDatabase.LoadAssetAtPath<GcnkFile>(gcnkFilePath);
 
-                    if (gcnkFile is null)
+                    if (gcnkFile is null) {
                         continue;
+                    }
 
                     var chunkObject = new GameObject($"Chunk ({gcnkFile.Coords.x}, {gcnkFile.Coords.y})") {
-                        transform =
-                        {
+                        transform = {
                             parent = worldObject.transform
                         }
                     };
@@ -287,16 +288,18 @@ namespace ForgeLightToolkit.Editor
                                 name = $"Tile {tile.Index}"
                             };
 
-                            if (loadedChunkMaterial is not null && ! _overrideTerrainMaterials && !_fastMode) {
+                            if (loadedChunkMaterial is not null && !_overrideTerrainMaterials && !_fastMode) {
                                 chunkMaterial = loadedChunkMaterial;
                                 chunkMaterials[tile.Index] = chunkMaterial;
                                 continue;
                             }
-                            if (gck2File is not null)
+                            if (gck2File is not null) {
                                 chunkMaterial.mainTexture = gck2File.Texture;
+                            }
 
-                            if (gcnkFile.DetailMask is not null)
+                            if (gcnkFile.DetailMask is not null) {
                                 chunkMaterial.SetTexture("_DetailMaskMap", gcnkFile.DetailMask);
+                            }
 
                             for (var i = 0; i < tile.EcoDataList.Count; i++) {
                                 var ecoDataIndex = tile.EcoDataList[i];
@@ -321,17 +324,19 @@ namespace ForgeLightToolkit.Editor
                     foreach (var tile in gcnkFile.Tiles) {
                         foreach (var runtimeObject in tile.RuntimeObjects) {
                             if (runtimeObject.Unknown > 0) {
-                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.Unknown, runtimeObject))
+                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.Unknown, runtimeObject)) {
                                     continue;
+                                }
                             } else {
-                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.ObjectId, runtimeObject))
+                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.ObjectId, runtimeObject)) {
                                     continue;
+                                }
                             }
 
                             var fileExtension = Path.GetExtension(runtimeObject.FileName);
 
                             if (fileExtension == ".adr") {
-                                LoadAdrFile(runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
+                                LoadAdrFile(runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.ObjectId);
                             } else if (fileExtension == ".agr") {
                                 var agrFilePath = Path.Combine(assetsPath, runtimeObject.FileName);
 
@@ -343,15 +348,14 @@ namespace ForgeLightToolkit.Editor
                                 }
 
                                 foreach (var actor in agrFile.ActorSet.Actors) {
-                                    LoadAdrFile(actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation);
+                                    LoadAdrFile(actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.ObjectId);
                                 }
                             }
                         }
 
                         foreach (var rawLight in tile.RawLights) {
                             var lightObject = new GameObject($"Light ({rawLight.Name})") {
-                                transform =
-                                {
+                                transform = {
                                     parent = chunkObject.transform,
                                     position = rawLight.Position
                                 }
@@ -374,7 +378,7 @@ namespace ForgeLightToolkit.Editor
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation) {
+        private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, int runtimeId = 0) {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
@@ -404,8 +408,7 @@ namespace ForgeLightToolkit.Editor
             }
 
             var runtimeObject = new GameObject(adrFileName.Split(".")[0]) {
-                transform =
-                {
+                transform = {
                     parent = parentObject == null ? null : parentObject.transform,
                     localPosition = position,
                     localScale = Vector3.one * scale,
@@ -415,8 +418,7 @@ namespace ForgeLightToolkit.Editor
 
             foreach (var meshEntry in dmeFile.Meshes) {
                 var meshObject = new GameObject() {
-                    transform =
-                    {
+                    transform = {
                         parent = runtimeObject.transform,
                         localPosition = Vector3.zero,
                         localScale = Vector3.one,
@@ -429,8 +431,9 @@ namespace ForgeLightToolkit.Editor
                 var objectMeshRenderer = meshObject.AddComponent<MeshRenderer>();
                 var materialEntry = dmeFile.DmaFile.MaterialEntries[meshEntry.MaterialIndex];
                 var materialDefinition = MaterialInfo.Instance.MaterialDefinitions.FirstOrDefault(x => x.NameHash == materialEntry.Hash);
-                if (materialDefinition is null)
+                if (materialDefinition is null) {
                     continue;
+                }
 
                 var materialShader = Shader.Find($"Custom/{materialDefinition.Name}");
 
@@ -447,7 +450,7 @@ namespace ForgeLightToolkit.Editor
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
                     if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !_fastMode) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
-                        if (textureName is null) textureName = "SOMETHING_HAS_GONE_WRONG.mat";
+                        textureName ??= "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
                         loadedMat = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(materialsSavePath, matFileName));
                     }
@@ -460,16 +463,18 @@ namespace ForgeLightToolkit.Editor
                 }
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    var parameterName = $"_{(ParameterName)parameterEntry.Hash}";
+                    var parameterName = $"_{(ParameterName) parameterEntry.Hash}";
 
-                    if (!objectMaterial.HasProperty(parameterName))
+                    if (!objectMaterial.HasProperty(parameterName)) {
                         Debug.LogWarning($"{materialDefinition.Name}\t{parameterName}\t{parameterEntry.Class}\t{parameterEntry.Type}\t{parameterEntry.Int}\t{parameterEntry.Float}\t{parameterEntry.Vector4}\t{parameterEntry.Matrix4x4}\t{parameterEntry.Object}");
+                    }
 
                     if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_SCALAR) {
-                        if (parameterEntry.Type == D3DXPARAMETER_TYPE.D3DXPT_FLOAT)
+                        if (parameterEntry.Type == D3DXPARAMETER_TYPE.D3DXPT_FLOAT) {
                             objectMaterial.SetFloat(parameterName, parameterEntry.Float);
-                        else
+                        } else {
                             objectMaterial.SetInteger(parameterName, parameterEntry.Int);
+                        }
                     } else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_VECTOR) {
                         objectMaterial.SetVector(parameterName, parameterEntry.Vector4);
                     } else if (parameterEntry.Class is D3DXPARAMETER_CLASS.D3DXPC_MATRIX_ROWS or D3DXPARAMETER_CLASS.D3DXPC_MATRIX_COLUMNS) {
@@ -501,7 +506,7 @@ namespace ForgeLightToolkit.Editor
                     }
                 }
                 if (matFileName == "") {
-                    matFileName = "See_LoadWorldWindow_Line_476.mat";
+                    matFileName = $"See_LoadWorldWindow_Line_{LineNumber()}.mat";
                 }
                 if (!_fastMode) {
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
@@ -518,6 +523,16 @@ namespace ForgeLightToolkit.Editor
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
                 runtimeObject.transform.localScale = Vector3.one * scale;
             }
+
+            // add the runtime data for this object
+            var flo = runtimeObject.AddComponent<ForgelightObject>();
+            flo.AdrFileName = adrFileName;
+            flo.RuntimeObjectId = runtimeId;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int LineNumber([CallerLineNumber] int lineNumber = 0) {
+            return lineNumber;
         }
     }
 }
