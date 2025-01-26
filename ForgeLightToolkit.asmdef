@@ -2,9 +2,12 @@
     "name": "ForgeLightToolkit",
     "rootNamespace": "ForgeLightToolkit",
     "references": [
-        "GUID:237ebda5d022bc942846096a0f08f009"
+        "GUID:237ebda5d022bc942846096a0f08f009",
+        "GUID:73b250b360f1a4b45a380b3fd030bb32"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
