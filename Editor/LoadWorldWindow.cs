@@ -9,6 +9,7 @@ using ForgeLightToolkit.Editor.FileTypes.Dma;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 using ForgeLightToolkit.Runtime;
 using System.Runtime.CompilerServices;
+using UnityEngine.Rendering;
 
 namespace ForgeLightToolkit.Editor {
     public class LoadWorldWindow : EditorWindow {
@@ -447,6 +448,10 @@ namespace ForgeLightToolkit.Editor {
                 var materialDefinition = MaterialInfo.Instance.MaterialDefinitions.FirstOrDefault(x => x.NameHash == materialEntry.Hash);
                 if (materialDefinition is null) {
                     continue;
+                }
+
+                if (materialDefinition.Name.Contains("NoShadow")) {
+                    objectMeshRenderer.shadowCastingMode = ShadowCastingMode.Off;
                 }
 
                 var materialShader = Shader.Find($"Custom/{materialDefinition.Name}");
