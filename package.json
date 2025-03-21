@@ -1,6 +1,6 @@
 {
   "name": "com.hybr2d.forgelighttoolkit",
-  "version": "2.1.0-Fork",
+  "version": "2.1.1-Fork",
   "displayName": "ForgeLight Toolkit",
   "description": "ForgeLight Toolkit allows you to import and use ForgeLight assets in Unity.",
   "unity": "2019.1",
@@ -11,8 +11,8 @@
     "Free Realms"
   ],
   "author": {
-    "name": "EDITz",
-    "email": "hello@hybr2d.com",
-    "url": "https://hybr2d.com"
+    "name": "CWAEmu Team",
+    "email": "support@cwaemu.com",
+    "url": "https://cwaemu.com/"
   }
 }
