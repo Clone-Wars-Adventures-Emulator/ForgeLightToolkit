@@ -1,18 +1,22 @@
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEditor;
-using UnityEngine;
 using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 using ForgeLightToolkit.Runtime;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ForgeLightToolkit.Editor {
     public class LoadWorldWindow : EditorWindow {
+        private const int VerticalSpace = 15;
+        private const int HorizontalSpace = 15;
+        private const int HorizontalTabbedSpace = 25;
+
         private string worldName = "";
         private string adrName = "";
         private string assetsPath = "Assets/ExtractedPacks";
@@ -21,11 +25,11 @@ namespace ForgeLightToolkit.Editor {
         private string terrainMaterialsSavePath = "Assets/TerrainMaterials";
         private string worldPrefabSavePath = "Assets/Prefabs/Worlds";
 
-        private bool _fastMode = false;
-        private bool _overrideTerrainMaterials;
-        private bool _overrideWorldPrefabsAndMats;
+        private bool fastMode;
+        private bool overrideTerrainMaterials;
+        private bool overrideWorldPrefabsAndMats;
 
-        private HashSet<string> objectsAlreadyProcessed;
+        private readonly HashSet<string> objectsAlreadyProcessed = new();
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow() {
@@ -35,160 +39,162 @@ namespace ForgeLightToolkit.Editor {
         private void OnGUI() {
             GUILayout.BeginArea(new Rect(0, 0, Screen.width / EditorGUIUtility.pixelsPerPoint, Screen.height / EditorGUIUtility.pixelsPerPoint));
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Assets Path", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: Assets/ForgeLight/CloneWarsAdventures", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             assetsPath = EditorGUILayout.TextField(assetsPath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Object Prefab Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: Assets/Prefabs/Objects", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             prefabSavePath = EditorGUILayout.TextField(prefabSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("World Prefab Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: Assets/Prefabs/Worlds", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             worldPrefabSavePath = EditorGUILayout.TextField(worldPrefabSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Terrain Materials Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: Assets/TerrainMaterials", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             terrainMaterialsSavePath = EditorGUILayout.TextField(terrainMaterialsSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Object Materials Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: Assets/Materials", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             materialsSavePath = EditorGUILayout.TextField(materialsSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("World Name", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: JediTemple", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             worldName = EditorGUILayout.TextField(worldName);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label(
                 "Please read the tooltips on the following boxes " +
                 "to ensure you know what you are doing before " +
                 "you run with any of the options selected.", EditorStyles.wordWrappedLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            _fastMode = GUILayout.Toggle(_fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalTabbedSpace);
+            fastMode = GUILayout.Toggle(fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            _overrideTerrainMaterials = GUILayout.Toggle(_overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalTabbedSpace);
+            overrideTerrainMaterials = GUILayout.Toggle(overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            _overrideWorldPrefabsAndMats = GUILayout.Toggle(_overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
+            GUILayout.Space(HorizontalTabbedSpace);
+            overrideWorldPrefabsAndMats = GUILayout.Toggle(overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+            GUILayout.Space(HorizontalTabbedSpace);
+            if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && buttonClickValid()) {
                 var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{worldName}.gzne\"");
 
-                objectsAlreadyProcessed = new HashSet<string>();
+                ensureDirectoriesExist();
+
+                objectsAlreadyProcessed.Clear();
 
                 foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
                     var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
@@ -203,21 +209,25 @@ namespace ForgeLightToolkit.Editor {
                 }
             }
             GUILayout.EndHorizontal();
-            GUILayout.Space(15);
+
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             adrName = EditorGUILayout.TextField(adrName);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
-            GUILayout.Space(15);
+
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            if (GUILayout.Button("Load Adr(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+            GUILayout.Space(HorizontalTabbedSpace);
+            if (GUILayout.Button("Load Adr(s)", GUILayout.ExpandWidth(false)) && buttonClickValid()) {
                 var adrFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{adrName}.adr\"");
 
-                objectsAlreadyProcessed = new HashSet<string>();
+                ensureDirectoriesExist();
+
+                objectsAlreadyProcessed.Clear();
 
                 foreach (var adrFileAssetGuid in adrFileAssetGuids) {
                     var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
@@ -235,6 +245,45 @@ namespace ForgeLightToolkit.Editor {
             GUILayout.EndArea();
         }
 
+        private bool buttonClickValid() {
+            bool condition = !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath);
+
+            if (!condition) {
+                List<string> badInputs = new();
+                if (string.IsNullOrEmpty(assetsPath)) {
+                    badInputs.Add("Assets Path");
+                }
+                if (string.IsNullOrEmpty(prefabSavePath)) {
+                    badInputs.Add("Prefab Save Path");
+                }
+                if (!string.IsNullOrEmpty(materialsSavePath)) {
+                    badInputs.Add($"Materials Save Path");
+                }
+
+                Debug.LogError($"LWW: Missing Required Inputs: {string.Join(", ", badInputs)}");
+            }
+
+            return condition;
+        }
+
+        private void ensureDirectoriesExist() {
+            if (!Directory.Exists(assetsPath)) {
+                Directory.CreateDirectory(assetsPath);
+            }
+            if (!Directory.Exists(prefabSavePath)) {
+                Directory.CreateDirectory(prefabSavePath);
+            }
+            if (!Directory.Exists(materialsSavePath)) {
+                Directory.CreateDirectory(materialsSavePath);
+            }
+            if (!Directory.Exists(terrainMaterialsSavePath)) {
+                Directory.CreateDirectory(terrainMaterialsSavePath);
+            }
+            if (!Directory.Exists(worldPrefabSavePath)) {
+                Directory.CreateDirectory(worldPrefabSavePath);
+            }
+        }
+
         // ReSharper disable Unity.PerformanceAnalysis
         private void LoadWorld(string worldName) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
@@ -244,7 +293,7 @@ namespace ForgeLightToolkit.Editor {
             }
 
             GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
-            if (loadedWorldObject is not null && !_overrideWorldPrefabsAndMats && !_fastMode) {
+            if (loadedWorldObject is not null && !overrideWorldPrefabsAndMats && !fastMode) {
                 PrefabUtility.InstantiatePrefab(loadedWorldObject);
                 return;
             }
@@ -289,7 +338,7 @@ namespace ForgeLightToolkit.Editor {
                                 name = $"Tile {tile.Index}"
                             };
 
-                            if (loadedChunkMaterial is not null && !_overrideTerrainMaterials && !_fastMode) {
+                            if (loadedChunkMaterial is not null && !overrideTerrainMaterials && !fastMode) {
                                 chunkMaterial = loadedChunkMaterial;
                                 chunkMaterials[tile.Index] = chunkMaterial;
                                 continue;
@@ -314,7 +363,7 @@ namespace ForgeLightToolkit.Editor {
 
                                 chunkMaterial.SetTexture($"_DetailColorMap{i}", ecoDataTexture2d);
                             }
-                            if (!_fastMode) {
+                            if (!fastMode) {
                                 AssetDatabase.CreateAsset(chunkMaterial, Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
                             }
                             chunkMaterials[tile.Index] = chunkMaterial;
@@ -373,7 +422,7 @@ namespace ForgeLightToolkit.Editor {
                 }
             }
             worldObject.transform.localScale = new Vector3(1, 1, -1);
-            if (!_fastMode) {
+            if (!fastMode) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
             }
         }
@@ -383,7 +432,7 @@ namespace ForgeLightToolkit.Editor {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
-            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !_fastMode) {
+            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -467,7 +516,7 @@ namespace ForgeLightToolkit.Editor {
                 Material loadedMat = null;
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !_fastMode) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !fastMode) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
                         textureName ??= "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
@@ -527,7 +576,7 @@ namespace ForgeLightToolkit.Editor {
                 if (matFileName == "") {
                     matFileName = $"See_LoadWorldWindow_Line_{LineNumber()}.mat";
                 }
-                if (!_fastMode) {
+                if (!fastMode) {
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
                 }
                 meshObject.name = meshEntry.Mesh.name;
@@ -537,7 +586,7 @@ namespace ForgeLightToolkit.Editor {
             }
 
             objectsAlreadyProcessed.Add(runtimeObject.name);
-            if (!_fastMode) {
+            if (!fastMode) {
                 runtimeObject.transform.localScale = Vector3.one;
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
                 runtimeObject.transform.localScale = Vector3.one * scale;
