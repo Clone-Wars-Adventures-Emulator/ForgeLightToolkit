@@ -17,19 +17,33 @@ namespace ForgeLightToolkit.Editor {
         private const int HorizontalSpace = 15;
         private const int HorizontalTabbedSpace = 25;
 
+        [SerializeField]
         private string worldName = "";
+        [NonSerialized]
         private string adrName = "";
+        [SerializeField]
         private string assetsPath = "Assets/ExtractedPacks";
+        [SerializeField]
         private string prefabSavePath = "Assets/Prefabs/Objects";
+        [SerializeField]
         private string materialsSavePath = "Assets/Materials";
+        [SerializeField]
         private string terrainMaterialsSavePath = "Assets/TerrainMaterials";
+        [SerializeField]
         private string worldPrefabSavePath = "Assets/Prefabs/Worlds";
 
+        [SerializeField]
         private bool fastMode;
+        [SerializeField]
         private bool overrideTerrainMaterials;
+        [SerializeField]
         private bool overrideWorldPrefabsAndMats;
 
+        [NonSerialized]
         private readonly HashSet<string> objectsAlreadyProcessed = new();
+
+        private SerializedObject so;
+        private SerializedObject SObject => so ??= new(this);
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow() {
@@ -55,7 +69,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            assetsPath = EditorGUILayout.TextField(assetsPath);
+            EditorGUILayout.PropertyField(SObject.FindProperty("assetsPath"), new GUIContent());
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -75,7 +89,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            prefabSavePath = EditorGUILayout.TextField(prefabSavePath);
+            EditorGUILayout.PropertyField(SObject.FindProperty("prefabSavePath"), new GUIContent());
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -95,7 +109,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            worldPrefabSavePath = EditorGUILayout.TextField(worldPrefabSavePath);
+            EditorGUILayout.PropertyField(SObject.FindProperty("worldPrefabSavePath"), new GUIContent());
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -115,7 +129,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            terrainMaterialsSavePath = EditorGUILayout.TextField(terrainMaterialsSavePath);
+            EditorGUILayout.PropertyField(SObject.FindProperty("terrainMaterialsSavePath"), new GUIContent());
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -135,7 +149,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            materialsSavePath = EditorGUILayout.TextField(materialsSavePath);
+            EditorGUILayout.PropertyField(SObject.FindProperty("materialsSavePath"), new GUIContent());
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -155,7 +169,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            worldName = EditorGUILayout.TextField(worldName);
+            EditorGUILayout.PropertyField(SObject.FindProperty("worldName"), new GUIContent());
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -172,20 +186,24 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalTabbedSpace);
-            fastMode = GUILayout.Toggle(fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
+            SObject.FindProperty("fastMode").boolValue = GUILayout.Toggle(fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalTabbedSpace);
-            overrideTerrainMaterials = GUILayout.Toggle(overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
+            SObject.FindProperty("overrideTerrainMaterials").boolValue = GUILayout.Toggle(overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalTabbedSpace);
-            overrideWorldPrefabsAndMats = GUILayout.Toggle(overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
+            SObject.FindProperty("overrideWorldPrefabsAndMats").boolValue = GUILayout.Toggle(overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
             GUILayout.EndHorizontal();
+
+            if (SObject.hasModifiedProperties) {
+                SObject.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalTabbedSpace);
@@ -201,7 +219,7 @@ namespace ForgeLightToolkit.Editor {
 
                     var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
 
-                    if (gzneFile is null) {
+                    if (gzneFile == null) {
                         continue;
                     }
 
@@ -234,7 +252,7 @@ namespace ForgeLightToolkit.Editor {
 
                     var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
 
-                    if (adrFile is null) {
+                    if (adrFile == null) {
                         continue;
                     }
 
@@ -288,18 +306,18 @@ namespace ForgeLightToolkit.Editor {
         private void LoadWorld(string worldName) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
 
-            if (gzneFile is null) {
+            if (gzneFile == null) {
                 return;
             }
 
             GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
-            if (loadedWorldObject is not null && !overrideWorldPrefabsAndMats && !fastMode) {
+            if (loadedWorldObject != null && !overrideWorldPrefabsAndMats && !fastMode) {
                 PrefabUtility.InstantiatePrefab(loadedWorldObject);
                 return;
             }
-            GameObject worldObject = new GameObject($"World_{worldName}");
+            GameObject worldObject = new($"World_{worldName}");
 
-            Dictionary<int, RuntimeObject> loadedRuntimeObjects = new Dictionary<int, RuntimeObject>();
+            Dictionary<int, RuntimeObject> loadedRuntimeObjects = new();
 
             for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
                 for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
@@ -309,7 +327,7 @@ namespace ForgeLightToolkit.Editor {
 
                     var gcnkFile = AssetDatabase.LoadAssetAtPath<GcnkFile>(gcnkFilePath);
 
-                    if (gcnkFile is null) {
+                    if (gcnkFile == null) {
                         continue;
                     }
 
@@ -338,16 +356,16 @@ namespace ForgeLightToolkit.Editor {
                                 name = $"Tile {tile.Index}"
                             };
 
-                            if (loadedChunkMaterial is not null && !overrideTerrainMaterials && !fastMode) {
+                            if (loadedChunkMaterial != null && !overrideTerrainMaterials && !fastMode) {
                                 chunkMaterial = loadedChunkMaterial;
                                 chunkMaterials[tile.Index] = chunkMaterial;
                                 continue;
                             }
-                            if (gck2File is not null) {
+                            if (gck2File != null) {
                                 chunkMaterial.mainTexture = gck2File.Texture;
                             }
 
-                            if (gcnkFile.DetailMask is not null) {
+                            if (gcnkFile.DetailMask != null) {
                                 chunkMaterial.SetTexture("_DetailMaskMap", gcnkFile.DetailMask);
                             }
 
@@ -392,7 +410,7 @@ namespace ForgeLightToolkit.Editor {
 
                                 var agrFile = AssetDatabase.LoadAssetAtPath<AgrFile>(agrFilePath);
 
-                                if (agrFile is null) {
+                                if (agrFile == null) {
                                     Debug.LogError($"Failed to load Agr. {agrFilePath}");
                                     continue;
                                 }
@@ -432,7 +450,7 @@ namespace ForgeLightToolkit.Editor {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
-            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
+            if (existingPrefab != null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -450,7 +468,7 @@ namespace ForgeLightToolkit.Editor {
                 return;
             }
 
-            if (adrFile is null) {
+            if (adrFile == null) {
                 Debug.LogError($"Failed to load Adr. {adrFilePath}");
                 return;
             }
@@ -462,7 +480,7 @@ namespace ForgeLightToolkit.Editor {
 
             var dmeFilePath = Path.Combine(assetsPath, adrFile.ModelFileName);
             var dmeFile = AssetDatabase.LoadAssetAtPath<DmeFile>(dmeFilePath);
-            if (dmeFile is null) {
+            if (dmeFile == null) {
                 Debug.LogError($"Failed to load Dme. {dmeFilePath}");
                 return;
             }
@@ -505,7 +523,7 @@ namespace ForgeLightToolkit.Editor {
 
                 var materialShader = Shader.Find($"Custom/{materialDefinition.Name}");
 
-                if (materialShader is null) {
+                if (materialShader == null) {
                     Debug.LogWarning($"Missing Shader \"{materialDefinition.Name}\" for Object \"{adrFileName}\".");
                     continue;
                 }
@@ -561,7 +579,7 @@ namespace ForgeLightToolkit.Editor {
 
                         var texture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFilePath);
 
-                        if (texture2d is null) {
+                        if (texture2d == null) {
                             Debug.LogError($"Failed to find texture. {textureFilePath}");
                             continue;
                         }
