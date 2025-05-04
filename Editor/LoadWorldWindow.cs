@@ -214,16 +214,24 @@ namespace ForgeLightToolkit.Editor {
 
                 objectsAlreadyProcessed.Clear();
 
-                foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
-                    var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
+                try {
+                    AssetDatabase.StartAssetEditing();
+                    foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
+                        var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
 
-                    var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
+                        var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
 
-                    if (gzneFile == null) {
-                        continue;
+                        if (gzneFile == null) {
+                            continue;
+                        }
+
+                        LoadWorld(gzneFile.name);
                     }
-
-                    LoadWorld(gzneFile.name);
+                } catch (Exception e) {
+                    Debug.LogError($"Caught Exception when trying to import world(s) {worldName}");
+                    Debug.LogException(e);
+                } finally {
+                    AssetDatabase.StopAssetEditing();
                 }
             }
             GUILayout.EndHorizontal();
@@ -247,17 +255,26 @@ namespace ForgeLightToolkit.Editor {
 
                 objectsAlreadyProcessed.Clear();
 
-                foreach (var adrFileAssetGuid in adrFileAssetGuids) {
-                    var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
+                try {
+                    AssetDatabase.StartAssetEditing();
+                    foreach (var adrFileAssetGuid in adrFileAssetGuids) {
+                        var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
 
-                    var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
+                        var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
 
-                    if (adrFile == null) {
-                        continue;
+                        if (adrFile == null) {
+                            continue;
+                        }
+
+                        LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, new Vector4(0, 0, 0, 0));
                     }
-
-                    LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, new Vector4(0, 0, 0, 0));
+                } catch (Exception e) {
+                    Debug.LogError($"Caught Exception when trying to import adr file(s) {adrName}");
+                    Debug.LogException(e);
+                } finally {
+                    AssetDatabase.StopAssetEditing();
                 }
+
             }
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
@@ -459,11 +476,11 @@ namespace ForgeLightToolkit.Editor {
                 if (!loadedObject.TryGetComponent<ForgelightObject>(out var forgelightObject)) {
                     Debug.LogWarning($"Prefab for {adrFileName} was missing the ForgelightObject component. Adding a new instance");
                     forgelightObject = loadedObject.AddComponent<ForgelightObject>();
-                    forgelightObject.AdrFileName = adrFileName;
+                    forgelightObject.adrFileName = adrFileName;
                 }
 
                 // Runtime instance IDs of objects shouldnt be saved in the prefab, which means each instantiation needs it's id
-                forgelightObject.RuntimeObjectId = runtimeId;
+                forgelightObject.runtimeObjectId = runtimeId;
 
                 return;
             }
@@ -496,7 +513,11 @@ namespace ForgeLightToolkit.Editor {
 
             // add the runtime data for this object
             var flo = runtimeObject.AddComponent<ForgelightObject>();
-            flo.AdrFileName = adrFileName;
+            flo.adrFileName = adrFileName;
+
+            if (adrFile.collisionFile != null) {
+                AddColliderToObject(runtimeObject, adrFile.collisionFile);
+            }
 
             foreach (var meshEntry in dmeFile.Meshes) {
                 var meshObject = new GameObject() {
@@ -611,12 +632,111 @@ namespace ForgeLightToolkit.Editor {
             }
 
             // only do this after the prefab has been saved, Runtime instance IDs of objects shouldnt be saved in that
-            flo.RuntimeObjectId = runtimeId;
+            flo.runtimeObjectId = runtimeId;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LineNumber([CallerLineNumber] int lineNumber = 0) {
             return lineNumber;
+        }
+
+        public static void AddColliderToObject(GameObject go, string collisionFile) {
+            var collisionFileNoExt = Path.GetFileNameWithoutExtension(collisionFile);
+            var guids = AssetDatabase.FindAssets($"t:cdtFile {collisionFileNoExt}");
+            if (guids == null || guids.Length == 0) {
+                Debug.LogError($"No collision file exists for {collisionFile}, not adding a collider to {go.name}");
+                return;
+            }
+
+            if (guids.Length > 1) {
+                Debug.LogError($"More than one ({guids.Length}) collision file exists for {collisionFile}, not adding a collider to {go.name}");
+                return;
+            }
+
+            var cdtFilePath = AssetDatabase.GUIDToAssetPath(guids[0]);
+            var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtFilePath);
+
+            var meshCollider = go.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = cdtFile.colliderMesh;
+        }
+
+        [MenuItem("ForgeLight/Ensure Preafabs Have Correct ADR File Name")]
+        public static void EnsurePreafabsHaveCorrectName() {
+            var all = Directory.EnumerateFiles("Assets/Worlds", "*.prefab", SearchOption.AllDirectories);
+
+            try {
+                AssetDatabase.StartAssetEditing();
+                foreach (var path in all) {
+                    var prefabName = Path.GetFileNameWithoutExtension(path);
+
+                    using var prefabContext = new PrefabUtility.EditPrefabContentsScope(path);
+                    var go = prefabContext.prefabContentsRoot;
+
+                    if (go.TryGetComponent<ForgelightObject>(out var flo)) {
+                        var adrPaths = AssetDatabase.FindAssets($"t:adrFile {Path.GetFileNameWithoutExtension(flo.adrFileName)}")
+                            .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                            .Where(path => Path.GetFileNameWithoutExtension(path) == prefabName)
+                            .ToList();
+
+                        if (adrPaths.Count == 1) {
+                            flo.adrFileName = $"{prefabName}.adr";
+                        } else {
+                            Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as matches");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Debug.LogError("Failed to apply colliders");
+                Debug.LogException(e);
+            } finally {
+                AssetDatabase.StopAssetEditing();
+            }
+        }
+
+        [MenuItem("ForgeLight/Add Colliders to ADR Prefabs")]
+        public static void AddCollidersToObjectPrefabs() {
+            var all = Directory.EnumerateFiles("Assets/Worlds", "*.prefab", SearchOption.AllDirectories);
+
+            try {
+                AssetDatabase.StartAssetEditing();
+                foreach (var path in all) {
+                    var prefabName = Path.GetFileNameWithoutExtension(path);
+
+                    using var prefabContext = new PrefabUtility.EditPrefabContentsScope(path);
+                    var go = prefabContext.prefabContentsRoot;
+
+                    if (go.TryGetComponent<ForgelightObject>(out var flo) && !go.TryGetComponent<MeshCollider>(out var _)) {
+                        var adrPaths = AssetDatabase.FindAssets($"t:adrFile {Path.GetFileNameWithoutExtension(flo.adrFileName)}")
+                            .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                            .Where(path => Path.GetFileNameWithoutExtension(path) == prefabName)
+                            .ToList();
+
+                        if (adrPaths.Count == 1) {
+                            var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrPaths[0]);
+
+                            var cdtFileName = adrFile.collisionFile;
+                            var cdtGuids = AssetDatabase.FindAssets($"t:cdtFile {Path.GetFileNameWithoutExtension(cdtFileName)}")
+                                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                                .ToList();
+
+                            if (cdtGuids.Count == 1) {
+                                var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtGuids[0]);
+                                var mc = go.AddComponent<MeshCollider>();
+                                mc.sharedMesh = cdtFile.colliderMesh;
+                            } else {
+                                Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as cdt matches");
+                            }
+                        } else {
+                            Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as adr matches");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Debug.LogError("Failed to apply colliders");
+                Debug.LogException(e);
+            } finally {
+                AssetDatabase.StopAssetEditing();
+            }
         }
     }
 }

@@ -81,9 +81,14 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 indices.Add(reader.ReadUInt16());
             }
 
+            // because unity and forgelight disagree on the z axis, we need to reverse the indicies here to get the front face facing the right way
+            var reversedIndicies = new List<int>(indices);
+            reversedIndicies.Reverse();
+
             colliderMesh = new Mesh();
             colliderMesh.SetVertices(verticies);
-            colliderMesh.SetIndices(indices, MeshTopology.Triangles, 0);
+            colliderMesh.SetIndices(reversedIndicies, MeshTopology.Triangles, 0);
+            colliderMesh.name = $"{name}_Collider";
 
             // TODO: possible future, read what ever bullet physics data goes right here
 

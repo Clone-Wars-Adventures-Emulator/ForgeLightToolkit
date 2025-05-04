@@ -20,7 +20,7 @@ namespace ForgeLightToolkit.Editor.Importers {
 
             ctx.AddObjectToAsset("cdt", cdtFile);
             ctx.SetMainObject(cdtFile);
-            ctx.AddObjectToAsset("ColliderMesh", cdtFile.colliderMesh);
+            ctx.AddObjectToAsset("collider", cdtFile.colliderMesh);
         }
     }
 }
