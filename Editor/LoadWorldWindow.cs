@@ -24,13 +24,13 @@ namespace ForgeLightToolkit.Editor {
         [SerializeField]
         private string assetsPath = "Assets/ExtractedPacks";
         [SerializeField]
-        private string prefabSavePath = "Assets/Prefabs/Objects";
+        private string prefabSavePath = "Assets/Worlds/_Prefabs";
         [SerializeField]
-        private string materialsSavePath = "Assets/Materials";
+        private string materialsSavePath = "Assets/Worlds/_Materials";
         [SerializeField]
-        private string terrainMaterialsSavePath = "Assets/TerrainMaterials";
+        private string terrainMaterialsSavePath = "Assets/Worlds/_Materials";
         [SerializeField]
-        private string worldPrefabSavePath = "Assets/Prefabs/Worlds";
+        private string worldPrefabSavePath = "Assets/Worlds/_Prefabs";
 
         [SerializeField]
         private bool fastMode;
