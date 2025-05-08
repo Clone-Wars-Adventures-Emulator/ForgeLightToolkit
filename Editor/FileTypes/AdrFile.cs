@@ -75,8 +75,8 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         break;
 
                     case EnumFileNameType.UpdateRadius:
-                        updateRadius = BitConverter.ToSingle(reader.ReadBytes(4).Reverse().ToArray());
-                        Debug.Log($"{adrFilePath} ur {updateRadius} ");
+                        byte[] bigEndianUpdateRadBytes = reader.ReadBytes(4);
+                        updateRadius = BitConverter.ToSingle(BitConverter.IsLittleEndian ? bigEndianUpdateRadBytes.Reverse().ToArray() : bigEndianUpdateRadBytes);
                         break;
 
                     default:

@@ -21,16 +21,26 @@ namespace ForgeLightToolkit.Editor {
         private string worldName = "";
         [NonSerialized]
         private string adrName = "";
+
+        private const string DefaultAssetsPath = "Assets/ExtractedPacks";
         [SerializeField]
-        private string assetsPath = "Assets/ExtractedPacks";
+        private string assetsPath = DefaultAssetsPath;
+
+        private const string DefaultPrefabSavePath = "Assets/Worlds/_Prefabs";
         [SerializeField]
-        private string prefabSavePath = "Assets/Worlds/_Prefabs";
+        private string prefabSavePath = DefaultPrefabSavePath;
+
+        private const string DefaultMaterialsSavePath = "Assets/Worlds/_Materials";
         [SerializeField]
-        private string materialsSavePath = "Assets/Worlds/_Materials";
+        private string materialsSavePath = DefaultMaterialsSavePath;
+
+        private const string DefaultTerrainMaterialsSavePath = "Assets/Worlds/_Materials";
         [SerializeField]
-        private string terrainMaterialsSavePath = "Assets/Worlds/_Materials";
+        private string terrainMaterialsSavePath = DefaultTerrainMaterialsSavePath;
+
+        private const string DefaultWorldPrefabSavePath = "Assets/Worlds/_Prefabs";
         [SerializeField]
-        private string worldPrefabSavePath = "Assets/Worlds/_Prefabs";
+        private string worldPrefabSavePath = DefaultWorldPrefabSavePath;
 
         [SerializeField]
         private bool fastMode;
@@ -63,7 +73,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            GUILayout.Label("Example: Assets/ForgeLight/CloneWarsAdventures", EditorStyles.miniBoldLabel);
+            GUILayout.Label($"Example: {DefaultAssetsPath}", EditorStyles.miniBoldLabel);
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -83,7 +93,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            GUILayout.Label("Example: Assets/Prefabs/Objects", EditorStyles.miniBoldLabel);
+            GUILayout.Label($"Example: {DefaultPrefabSavePath}", EditorStyles.miniBoldLabel);
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -103,7 +113,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            GUILayout.Label("Example: Assets/Prefabs/Worlds", EditorStyles.miniBoldLabel);
+            GUILayout.Label($"Example: {DefaultWorldPrefabSavePath}", EditorStyles.miniBoldLabel);
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -123,7 +133,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            GUILayout.Label("Example: Assets/TerrainMaterials", EditorStyles.miniBoldLabel);
+            GUILayout.Label($"Example: {DefaultTerrainMaterialsSavePath}", EditorStyles.miniBoldLabel);
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
@@ -143,7 +153,7 @@ namespace ForgeLightToolkit.Editor {
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalSpace);
-            GUILayout.Label("Example: Assets/Materials", EditorStyles.miniBoldLabel);
+            GUILayout.Label($"Example: {DefaultMaterialsSavePath}", EditorStyles.miniBoldLabel);
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 

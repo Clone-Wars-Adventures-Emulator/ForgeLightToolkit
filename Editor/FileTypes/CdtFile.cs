@@ -7,17 +7,17 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         public enum EnumUnknownEnum : uint {
             Unknown = 0,
             Default = 0x01,
-            _0x02 = 0x02,
-            _0x03 = 0x03,
-            _0x05 = 0x05,
-            _0x0A = 0x0A,
-            _0x26 = 0x26,
-            _0x27 = 0x27,
-            _0x28 = 0x28,
-            _0x29 = 0x29,
-            _0x2A = 0x2A,
-            _0x2B = 0x2B,
-            _0x2C = 0x2C,
+            UnknownPurpose_0x02 = 0x02,
+            UnknownPurpose_0x03 = 0x03,
+            UnknownPurpose_0x05 = 0x05,
+            UnknownPurpose_0x0A = 0x0A,
+            UnknownPurpose_0x26 = 0x26,
+            UnknownPurpose_0x27 = 0x27,
+            UnknownPurpose_0x28 = 0x28,
+            UnknownPurpose_0x29 = 0x29,
+            UnknownPurpose_0x2A = 0x2A,
+            UnknownPurpose_0x2B = 0x2B,
+            UnknownPurpose_0x2C = 0x2C,
             HighBidDefault = 0x80000001
         }
 
