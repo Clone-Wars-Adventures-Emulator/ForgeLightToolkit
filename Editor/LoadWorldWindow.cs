@@ -1,31 +1,59 @@
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEditor;
-using UnityEngine;
 using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 using ForgeLightToolkit.Runtime;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ForgeLightToolkit.Editor {
     public class LoadWorldWindow : EditorWindow {
+        private const int VerticalSpace = 15;
+        private const int HorizontalSpace = 15;
+        private const int HorizontalTabbedSpace = 25;
+
+        [SerializeField]
         private string worldName = "";
+        [NonSerialized]
         private string adrName = "";
-        private string assetsPath = "Assets/ExtractedPacks";
-        private string prefabSavePath = "Assets/Prefabs/Objects";
-        private string materialsSavePath = "Assets/Materials";
-        private string terrainMaterialsSavePath = "Assets/TerrainMaterials";
-        private string worldPrefabSavePath = "Assets/Prefabs/Worlds";
 
-        private bool _fastMode = false;
-        private bool _overrideTerrainMaterials;
-        private bool _overrideWorldPrefabsAndMats;
+        private const string DefaultAssetsPath = "Assets/ExtractedPacks";
+        [SerializeField]
+        private string assetsPath = DefaultAssetsPath;
 
-        private HashSet<string> objectsAlreadyProcessed;
+        private const string DefaultPrefabSavePath = "Assets/Worlds/_Prefabs";
+        [SerializeField]
+        private string prefabSavePath = DefaultPrefabSavePath;
+
+        private const string DefaultMaterialsSavePath = "Assets/Worlds/_Materials";
+        [SerializeField]
+        private string materialsSavePath = DefaultMaterialsSavePath;
+
+        private const string DefaultTerrainMaterialsSavePath = "Assets/Worlds/_Materials";
+        [SerializeField]
+        private string terrainMaterialsSavePath = DefaultTerrainMaterialsSavePath;
+
+        private const string DefaultWorldPrefabSavePath = "Assets/Worlds/_Prefabs";
+        [SerializeField]
+        private string worldPrefabSavePath = DefaultWorldPrefabSavePath;
+
+        [SerializeField]
+        private bool fastMode;
+        [SerializeField]
+        private bool overrideTerrainMaterials;
+        [SerializeField]
+        private bool overrideWorldPrefabsAndMats;
+
+        [NonSerialized]
+        private readonly HashSet<string> objectsAlreadyProcessed = new();
+
+        private SerializedObject so;
+        private SerializedObject SObject => so ??= new(this);
 
         [MenuItem("ForgeLight/Load World")]
         public static void ShowWindow() {
@@ -35,222 +63,288 @@ namespace ForgeLightToolkit.Editor {
         private void OnGUI() {
             GUILayout.BeginArea(new Rect(0, 0, Screen.width / EditorGUIUtility.pixelsPerPoint, Screen.height / EditorGUIUtility.pixelsPerPoint));
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Assets Path", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            GUILayout.Label("Example: Assets/ForgeLight/CloneWarsAdventures", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            GUILayout.Label($"Example: {DefaultAssetsPath}", EditorStyles.miniBoldLabel);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            assetsPath = EditorGUILayout.TextField(assetsPath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            EditorGUILayout.PropertyField(SObject.FindProperty("assetsPath"), new GUIContent());
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Object Prefab Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            GUILayout.Label("Example: Assets/Prefabs/Objects", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            GUILayout.Label($"Example: {DefaultPrefabSavePath}", EditorStyles.miniBoldLabel);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            prefabSavePath = EditorGUILayout.TextField(prefabSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            EditorGUILayout.PropertyField(SObject.FindProperty("prefabSavePath"), new GUIContent());
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("World Prefab Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            GUILayout.Label("Example: Assets/Prefabs/Worlds", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            GUILayout.Label($"Example: {DefaultWorldPrefabSavePath}", EditorStyles.miniBoldLabel);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            worldPrefabSavePath = EditorGUILayout.TextField(worldPrefabSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            EditorGUILayout.PropertyField(SObject.FindProperty("worldPrefabSavePath"), new GUIContent());
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Terrain Materials Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            GUILayout.Label("Example: Assets/TerrainMaterials", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            GUILayout.Label($"Example: {DefaultTerrainMaterialsSavePath}", EditorStyles.miniBoldLabel);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            terrainMaterialsSavePath = EditorGUILayout.TextField(terrainMaterialsSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            EditorGUILayout.PropertyField(SObject.FindProperty("terrainMaterialsSavePath"), new GUIContent());
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Object Materials Save Location", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            GUILayout.Label("Example: Assets/Materials", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            GUILayout.Label($"Example: {DefaultMaterialsSavePath}", EditorStyles.miniBoldLabel);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            materialsSavePath = EditorGUILayout.TextField(materialsSavePath);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            EditorGUILayout.PropertyField(SObject.FindProperty("materialsSavePath"), new GUIContent());
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("World Name", EditorStyles.boldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label("Example: JediTemple", EditorStyles.miniBoldLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
-            worldName = EditorGUILayout.TextField(worldName);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
+            EditorGUILayout.PropertyField(SObject.FindProperty("worldName"), new GUIContent());
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(15);
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.Label(
                 "Please read the tooltips on the following boxes " +
                 "to ensure you know what you are doing before " +
                 "you run with any of the options selected.", EditorStyles.wordWrappedLabel);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            _fastMode = GUILayout.Toggle(_fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalTabbedSpace);
+            SObject.FindProperty("fastMode").boolValue = GUILayout.Toggle(fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            _overrideTerrainMaterials = GUILayout.Toggle(_overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalTabbedSpace);
+            SObject.FindProperty("overrideTerrainMaterials").boolValue = GUILayout.Toggle(overrideTerrainMaterials, new GUIContent("Override Terrain Materials", "Allows for reprocessing of terrain materials while maintaining all existing object prefabs and materials"));
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            _overrideWorldPrefabsAndMats = GUILayout.Toggle(_overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
+            GUILayout.Space(HorizontalTabbedSpace);
+            SObject.FindProperty("overrideWorldPrefabsAndMats").boolValue = GUILayout.Toggle(overrideWorldPrefabsAndMats, new GUIContent("Override World Object Prefabs And Materials", "Reprocesses all objects and prefabs in the world"));
             GUILayout.EndHorizontal();
 
+            if (SObject.hasModifiedProperties) {
+                SObject.ApplyModifiedPropertiesWithoutUndo();
+            }
+
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+            GUILayout.Space(HorizontalTabbedSpace);
+            if (GUILayout.Button("Load World(s)", GUILayout.ExpandWidth(false)) && buttonClickValid()) {
                 var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{worldName}.gzne\"");
 
-                objectsAlreadyProcessed = new HashSet<string>();
+                ensureDirectoriesExist();
 
-                foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
-                    var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
+                objectsAlreadyProcessed.Clear();
 
-                    var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
+                try {
+                    AssetDatabase.StartAssetEditing();
+                    foreach (var gzneFileAssetGuid in gzneFileAssetGuids) {
+                        var gzneFileAssetPath = AssetDatabase.GUIDToAssetPath(gzneFileAssetGuid);
 
-                    if (gzneFile is null) {
-                        continue;
+                        var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(gzneFileAssetPath);
+
+                        if (gzneFile == null) {
+                            continue;
+                        }
+
+                        LoadWorld(gzneFile.name);
                     }
-
-                    LoadWorld(gzneFile.name);
+                } catch (Exception e) {
+                    Debug.LogError($"Caught Exception when trying to import world(s) {worldName}");
+                    Debug.LogException(e);
+                } finally {
+                    AssetDatabase.StopAssetEditing();
                 }
             }
             GUILayout.EndHorizontal();
-            GUILayout.Space(15);
+
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             adrName = EditorGUILayout.TextField(adrName);
-            GUILayout.Space(15);
+            GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
-            GUILayout.Space(15);
+
+            GUILayout.Space(VerticalSpace);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Space(25);
-            if (GUILayout.Button("Load Adr(s)", GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath)) {
+            GUILayout.Space(HorizontalTabbedSpace);
+            if (GUILayout.Button("Load Adr(s)", GUILayout.ExpandWidth(false)) && buttonClickValid()) {
                 var adrFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{assetsPath}/{adrName}.adr\"");
 
-                objectsAlreadyProcessed = new HashSet<string>();
+                ensureDirectoriesExist();
 
-                foreach (var adrFileAssetGuid in adrFileAssetGuids) {
-                    var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
+                objectsAlreadyProcessed.Clear();
 
-                    var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
+                try {
+                    AssetDatabase.StartAssetEditing();
+                    foreach (var adrFileAssetGuid in adrFileAssetGuids) {
+                        var adrFileAssetPath = AssetDatabase.GUIDToAssetPath(adrFileAssetGuid);
 
-                    if (adrFile is null) {
-                        continue;
+                        var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFileAssetPath);
+
+                        if (adrFile == null) {
+                            continue;
+                        }
+
+                        LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, new Vector4(0, 0, 0, 0));
                     }
-
-                    LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, new Vector4(0, 0, 0, 0));
+                } catch (Exception e) {
+                    Debug.LogError($"Caught Exception when trying to import adr file(s) {adrName}");
+                    Debug.LogException(e);
+                } finally {
+                    AssetDatabase.StopAssetEditing();
                 }
+
             }
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
+        }
+
+        private bool buttonClickValid() {
+            bool condition = !string.IsNullOrEmpty(assetsPath) && !string.IsNullOrEmpty(prefabSavePath) && !string.IsNullOrEmpty(materialsSavePath);
+
+            if (!condition) {
+                List<string> badInputs = new();
+                if (string.IsNullOrEmpty(assetsPath)) {
+                    badInputs.Add("Assets Path");
+                }
+                if (string.IsNullOrEmpty(prefabSavePath)) {
+                    badInputs.Add("Prefab Save Path");
+                }
+                if (!string.IsNullOrEmpty(materialsSavePath)) {
+                    badInputs.Add($"Materials Save Path");
+                }
+
+                Debug.LogError($"LWW: Missing Required Inputs: {string.Join(", ", badInputs)}");
+            }
+
+            return condition;
+        }
+
+        private void ensureDirectoriesExist() {
+            if (!Directory.Exists(assetsPath)) {
+                Directory.CreateDirectory(assetsPath);
+            }
+            if (!Directory.Exists(prefabSavePath)) {
+                Directory.CreateDirectory(prefabSavePath);
+            }
+            if (!Directory.Exists(materialsSavePath)) {
+                Directory.CreateDirectory(materialsSavePath);
+            }
+            if (!Directory.Exists(terrainMaterialsSavePath)) {
+                Directory.CreateDirectory(terrainMaterialsSavePath);
+            }
+            if (!Directory.Exists(worldPrefabSavePath)) {
+                Directory.CreateDirectory(worldPrefabSavePath);
+            }
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
         private void LoadWorld(string worldName) {
             GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
 
-            if (gzneFile is null) {
+            if (gzneFile == null) {
                 return;
             }
 
             GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
-            if (loadedWorldObject is not null && !_overrideWorldPrefabsAndMats && !_fastMode) {
+            if (loadedWorldObject != null && !overrideWorldPrefabsAndMats && !fastMode) {
                 PrefabUtility.InstantiatePrefab(loadedWorldObject);
                 return;
             }
-            GameObject worldObject = new GameObject($"World_{worldName}");
+            GameObject worldObject = new($"World_{worldName}");
 
-            Dictionary<int, RuntimeObject> loadedRuntimeObjects = new Dictionary<int, RuntimeObject>();
+            Dictionary<int, RuntimeObject> loadedRuntimeObjects = new();
 
             for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
                 for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
@@ -260,7 +354,7 @@ namespace ForgeLightToolkit.Editor {
 
                     var gcnkFile = AssetDatabase.LoadAssetAtPath<GcnkFile>(gcnkFilePath);
 
-                    if (gcnkFile is null) {
+                    if (gcnkFile == null) {
                         continue;
                     }
 
@@ -289,16 +383,16 @@ namespace ForgeLightToolkit.Editor {
                                 name = $"Tile {tile.Index}"
                             };
 
-                            if (loadedChunkMaterial is not null && !_overrideTerrainMaterials && !_fastMode) {
+                            if (loadedChunkMaterial != null && !overrideTerrainMaterials && !fastMode) {
                                 chunkMaterial = loadedChunkMaterial;
                                 chunkMaterials[tile.Index] = chunkMaterial;
                                 continue;
                             }
-                            if (gck2File is not null) {
+                            if (gck2File != null) {
                                 chunkMaterial.mainTexture = gck2File.Texture;
                             }
 
-                            if (gcnkFile.DetailMask is not null) {
+                            if (gcnkFile.DetailMask != null) {
                                 chunkMaterial.SetTexture("_DetailMaskMap", gcnkFile.DetailMask);
                             }
 
@@ -314,7 +408,7 @@ namespace ForgeLightToolkit.Editor {
 
                                 chunkMaterial.SetTexture($"_DetailColorMap{i}", ecoDataTexture2d);
                             }
-                            if (!_fastMode) {
+                            if (!fastMode) {
                                 AssetDatabase.CreateAsset(chunkMaterial, Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
                             }
                             chunkMaterials[tile.Index] = chunkMaterial;
@@ -343,7 +437,7 @@ namespace ForgeLightToolkit.Editor {
 
                                 var agrFile = AssetDatabase.LoadAssetAtPath<AgrFile>(agrFilePath);
 
-                                if (agrFile is null) {
+                                if (agrFile == null) {
                                     Debug.LogError($"Failed to load Agr. {agrFilePath}");
                                     continue;
                                 }
@@ -373,7 +467,7 @@ namespace ForgeLightToolkit.Editor {
                 }
             }
             worldObject.transform.localScale = new Vector3(1, 1, -1);
-            if (!_fastMode) {
+            if (!fastMode) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
             }
         }
@@ -383,7 +477,7 @@ namespace ForgeLightToolkit.Editor {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
-            if (existingPrefab is not null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !_fastMode) {
+            if (existingPrefab != null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
                 loadedObject.transform.localPosition = position;
                 loadedObject.transform.localScale = Vector3.one * scale;
@@ -392,16 +486,16 @@ namespace ForgeLightToolkit.Editor {
                 if (!loadedObject.TryGetComponent<ForgelightObject>(out var forgelightObject)) {
                     Debug.LogWarning($"Prefab for {adrFileName} was missing the ForgelightObject component. Adding a new instance");
                     forgelightObject = loadedObject.AddComponent<ForgelightObject>();
-                    forgelightObject.AdrFileName = adrFileName;
+                    forgelightObject.adrFileName = adrFileName;
                 }
 
                 // Runtime instance IDs of objects shouldnt be saved in the prefab, which means each instantiation needs it's id
-                forgelightObject.RuntimeObjectId = runtimeId;
+                forgelightObject.runtimeObjectId = runtimeId;
 
                 return;
             }
 
-            if (adrFile is null) {
+            if (adrFile == null) {
                 Debug.LogError($"Failed to load Adr. {adrFilePath}");
                 return;
             }
@@ -413,7 +507,7 @@ namespace ForgeLightToolkit.Editor {
 
             var dmeFilePath = Path.Combine(assetsPath, adrFile.ModelFileName);
             var dmeFile = AssetDatabase.LoadAssetAtPath<DmeFile>(dmeFilePath);
-            if (dmeFile is null) {
+            if (dmeFile == null) {
                 Debug.LogError($"Failed to load Dme. {dmeFilePath}");
                 return;
             }
@@ -429,7 +523,11 @@ namespace ForgeLightToolkit.Editor {
 
             // add the runtime data for this object
             var flo = runtimeObject.AddComponent<ForgelightObject>();
-            flo.AdrFileName = adrFileName;
+            flo.adrFileName = adrFileName;
+
+            if (adrFile.collisionFile != null) {
+                AddColliderToObject(runtimeObject, adrFile.collisionFile);
+            }
 
             foreach (var meshEntry in dmeFile.Meshes) {
                 var meshObject = new GameObject() {
@@ -456,7 +554,7 @@ namespace ForgeLightToolkit.Editor {
 
                 var materialShader = Shader.Find($"Custom/{materialDefinition.Name}");
 
-                if (materialShader is null) {
+                if (materialShader == null) {
                     Debug.LogWarning($"Missing Shader \"{materialDefinition.Name}\" for Object \"{adrFileName}\".");
                     continue;
                 }
@@ -467,7 +565,7 @@ namespace ForgeLightToolkit.Editor {
                 Material loadedMat = null;
 
                 foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !_fastMode) {
+                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !fastMode) {
                         var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
                         textureName ??= "SOMETHING_HAS_GONE_WRONG.mat";
                         matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
@@ -512,7 +610,7 @@ namespace ForgeLightToolkit.Editor {
 
                         var texture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFilePath);
 
-                        if (texture2d is null) {
+                        if (texture2d == null) {
                             Debug.LogError($"Failed to find texture. {textureFilePath}");
                             continue;
                         }
@@ -527,7 +625,7 @@ namespace ForgeLightToolkit.Editor {
                 if (matFileName == "") {
                     matFileName = $"See_LoadWorldWindow_Line_{LineNumber()}.mat";
                 }
-                if (!_fastMode) {
+                if (!fastMode) {
                     AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
                 }
                 meshObject.name = meshEntry.Mesh.name;
@@ -537,19 +635,118 @@ namespace ForgeLightToolkit.Editor {
             }
 
             objectsAlreadyProcessed.Add(runtimeObject.name);
-            if (!_fastMode) {
+            if (!fastMode) {
                 runtimeObject.transform.localScale = Vector3.one;
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
                 runtimeObject.transform.localScale = Vector3.one * scale;
             }
 
             // only do this after the prefab has been saved, Runtime instance IDs of objects shouldnt be saved in that
-            flo.RuntimeObjectId = runtimeId;
+            flo.runtimeObjectId = runtimeId;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LineNumber([CallerLineNumber] int lineNumber = 0) {
             return lineNumber;
+        }
+
+        public static void AddColliderToObject(GameObject go, string collisionFile) {
+            var collisionFileNoExt = Path.GetFileNameWithoutExtension(collisionFile);
+            var guids = AssetDatabase.FindAssets($"t:cdtFile {collisionFileNoExt}");
+            if (guids == null || guids.Length == 0) {
+                Debug.LogError($"No collision file exists for {collisionFile}, not adding a collider to {go.name}");
+                return;
+            }
+
+            if (guids.Length > 1) {
+                Debug.LogError($"More than one ({guids.Length}) collision file exists for {collisionFile}, not adding a collider to {go.name}");
+                return;
+            }
+
+            var cdtFilePath = AssetDatabase.GUIDToAssetPath(guids[0]);
+            var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtFilePath);
+
+            var meshCollider = go.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = cdtFile.colliderMesh;
+        }
+
+        [MenuItem("ForgeLight/Ensure Preafabs Have Correct ADR File Name")]
+        public static void EnsurePreafabsHaveCorrectName() {
+            var all = Directory.EnumerateFiles("Assets/Worlds", "*.prefab", SearchOption.AllDirectories);
+
+            try {
+                AssetDatabase.StartAssetEditing();
+                foreach (var path in all) {
+                    var prefabName = Path.GetFileNameWithoutExtension(path);
+
+                    using var prefabContext = new PrefabUtility.EditPrefabContentsScope(path);
+                    var go = prefabContext.prefabContentsRoot;
+
+                    if (go.TryGetComponent<ForgelightObject>(out var flo)) {
+                        var adrPaths = AssetDatabase.FindAssets($"t:adrFile {Path.GetFileNameWithoutExtension(flo.adrFileName)}")
+                            .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                            .Where(path => Path.GetFileNameWithoutExtension(path) == prefabName)
+                            .ToList();
+
+                        if (adrPaths.Count == 1) {
+                            flo.adrFileName = $"{prefabName}.adr";
+                        } else {
+                            Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as matches");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Debug.LogError("Failed to apply colliders");
+                Debug.LogException(e);
+            } finally {
+                AssetDatabase.StopAssetEditing();
+            }
+        }
+
+        [MenuItem("ForgeLight/Add Colliders to ADR Prefabs")]
+        public static void AddCollidersToObjectPrefabs() {
+            var all = Directory.EnumerateFiles("Assets/Worlds", "*.prefab", SearchOption.AllDirectories);
+
+            try {
+                AssetDatabase.StartAssetEditing();
+                foreach (var path in all) {
+                    var prefabName = Path.GetFileNameWithoutExtension(path);
+
+                    using var prefabContext = new PrefabUtility.EditPrefabContentsScope(path);
+                    var go = prefabContext.prefabContentsRoot;
+
+                    if (go.TryGetComponent<ForgelightObject>(out var flo) && !go.TryGetComponent<MeshCollider>(out var _)) {
+                        var adrPaths = AssetDatabase.FindAssets($"t:adrFile {Path.GetFileNameWithoutExtension(flo.adrFileName)}")
+                            .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                            .Where(path => Path.GetFileNameWithoutExtension(path) == prefabName)
+                            .ToList();
+
+                        if (adrPaths.Count == 1) {
+                            var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrPaths[0]);
+
+                            var cdtFileName = adrFile.collisionFile;
+                            var cdtGuids = AssetDatabase.FindAssets($"t:cdtFile {Path.GetFileNameWithoutExtension(cdtFileName)}")
+                                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                                .ToList();
+
+                            if (cdtGuids.Count == 1) {
+                                var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtGuids[0]);
+                                var mc = go.AddComponent<MeshCollider>();
+                                mc.sharedMesh = cdtFile.colliderMesh;
+                            } else {
+                                Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as cdt matches");
+                            }
+                        } else {
+                            Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as adr matches");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Debug.LogError("Failed to apply colliders");
+                Debug.LogException(e);
+            } finally {
+                AssetDatabase.StopAssetEditing();
+            }
         }
     }
 }
