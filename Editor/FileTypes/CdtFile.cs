@@ -21,6 +21,8 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             HighBidDefault = 0x80000001
         }
 
+        public bool invertMeshIndicies = true;
+
         public List<Vector3> verticies = new();
         public List<int> indices = new();
         public EnumUnknownEnum unknownEnum;
@@ -81,9 +83,11 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 indices.Add(reader.ReadUInt16());
             }
 
-            // because unity and forgelight disagree on the z axis, we need to reverse the indicies here to get the front face facing the right way
+            // because unity and forgelight disagree on the z axis (only sometimes....), we need to reverse the indicies here to get the front face facing the right way
             var reversedIndicies = new List<int>(indices);
-            reversedIndicies.Reverse();
+            if (invertMeshIndicies) {
+                reversedIndicies.Reverse();
+            }
 
             colliderMesh = new Mesh();
             colliderMesh.SetVertices(verticies);
