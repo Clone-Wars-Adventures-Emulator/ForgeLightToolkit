@@ -1,7 +1,6 @@
 using ForgeLightToolkit.Editor.FileTypes;
 using UnityEngine;
 using UnityEditor.AssetImporters;
-using UnityEditor;
 
 namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "cdt")]
@@ -25,15 +24,6 @@ namespace ForgeLightToolkit.Editor.Importers {
             ctx.AddObjectToAsset("cdt", cdtFile);
             ctx.SetMainObject(cdtFile);
             ctx.AddObjectToAsset("collider", cdtFile.colliderMesh);
-        }
-    }
-
-    // Visual Studio wont auto correct this import??
-    [UnityEditor.CustomEditor(typeof(CdtImporter))]
-    public class CdtImporterEditor : ScriptedImporterEditor {
-        public override void OnInspectorGUI() {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("invertMeshIndicies"));
-            ApplyRevertGUI();
         }
     }
 }
