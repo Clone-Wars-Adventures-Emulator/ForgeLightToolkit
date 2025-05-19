@@ -525,7 +525,7 @@ namespace ForgeLightToolkit.Editor {
             var flo = runtimeObject.AddComponent<ForgelightObject>();
             flo.adrFileName = adrFileName;
 
-            if (adrFile.collisionFile != null) {
+            if (adrFile.collisionFile != null && adrFile.collisionFile.Length > 0) {
                 AddColliderToObject(runtimeObject, adrFile.collisionFile);
             }
 
@@ -652,19 +652,22 @@ namespace ForgeLightToolkit.Editor {
 
         public static void AddColliderToObject(GameObject go, string collisionFile) {
             var collisionFileNoExt = Path.GetFileNameWithoutExtension(collisionFile);
-            var guids = AssetDatabase.FindAssets($"t:cdtFile {collisionFileNoExt}");
-            if (guids == null || guids.Length == 0) {
+            var cdtPaths = AssetDatabase.FindAssets($"t:cdtFile {collisionFileNoExt}")
+                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                .Where(path => Path.GetFileNameWithoutExtension(path) == collisionFileNoExt)
+                .ToList();
+
+            if (cdtPaths == null || cdtPaths.Count == 0) {
                 Debug.LogError($"No collision file exists for {collisionFile}, not adding a collider to {go.name}");
                 return;
             }
 
-            if (guids.Length > 1) {
-                Debug.LogError($"More than one ({guids.Length}) collision file exists for {collisionFile}, not adding a collider to {go.name}");
+            if (cdtPaths.Count > 1) {
+                Debug.LogError($"More than one ({cdtPaths.Count}) collision file exists for {collisionFile}, not adding a collider to {go.name}");
                 return;
             }
 
-            var cdtFilePath = AssetDatabase.GUIDToAssetPath(guids[0]);
-            var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtFilePath);
+            var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtPaths[0]);
 
             var meshCollider = go.AddComponent<MeshCollider>();
             meshCollider.sharedMesh = cdtFile.colliderMesh;
@@ -691,12 +694,12 @@ namespace ForgeLightToolkit.Editor {
                         if (adrPaths.Count == 1) {
                             flo.adrFileName = $"{prefabName}.adr";
                         } else {
-                            Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as matches");
+                            Debug.LogWarning($"{path} found {string.Join(",\n", adrPaths)} as matches");
                         }
                     }
                 }
             } catch (Exception e) {
-                Debug.LogError("Failed to apply colliders");
+                Debug.LogError("Failed to ensure correct adr file names");
                 Debug.LogException(e);
             } finally {
                 AssetDatabase.StopAssetEditing();
@@ -710,35 +713,46 @@ namespace ForgeLightToolkit.Editor {
             try {
                 AssetDatabase.StartAssetEditing();
                 foreach (var path in all) {
-                    var prefabName = Path.GetFileNameWithoutExtension(path);
+                    try {
+                        var prefabName = Path.GetFileNameWithoutExtension(path);
 
-                    using var prefabContext = new PrefabUtility.EditPrefabContentsScope(path);
-                    var go = prefabContext.prefabContentsRoot;
+                        using var prefabContext = new PrefabUtility.EditPrefabContentsScope(path);
+                        var go = prefabContext.prefabContentsRoot;
 
-                    if (go.TryGetComponent<ForgelightObject>(out var flo) && !go.TryGetComponent<MeshCollider>(out var _)) {
-                        var adrPaths = AssetDatabase.FindAssets($"t:adrFile {Path.GetFileNameWithoutExtension(flo.adrFileName)}")
-                            .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
-                            .Where(path => Path.GetFileNameWithoutExtension(path) == prefabName)
-                            .ToList();
-
-                        if (adrPaths.Count == 1) {
-                            var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrPaths[0]);
-
-                            var cdtFileName = adrFile.collisionFile;
-                            var cdtGuids = AssetDatabase.FindAssets($"t:cdtFile {Path.GetFileNameWithoutExtension(cdtFileName)}")
+                        if (go.TryGetComponent<ForgelightObject>(out var flo) && !go.TryGetComponent<MeshCollider>(out var _)) {
+                            var adrPaths = AssetDatabase.FindAssets($"t:adrFile {Path.GetFileNameWithoutExtension(flo.adrFileName)}")
                                 .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                                .Where(path => Path.GetFileNameWithoutExtension(path) == prefabName)
                                 .ToList();
 
-                            if (cdtGuids.Count == 1) {
-                                var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtGuids[0]);
-                                var mc = go.AddComponent<MeshCollider>();
-                                mc.sharedMesh = cdtFile.colliderMesh;
+                            if (adrPaths.Count == 1) {
+                                var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrPaths[0]);
+
+                                var cdtFileName = adrFile.collisionFile;
+                                if (cdtFileName == null || cdtFileName.Length == 0) {
+                                    // if no collider name, dont do anything
+                                    continue;
+                                }
+
+                                var cdtPaths = AssetDatabase.FindAssets($"t:cdtFile {Path.GetFileNameWithoutExtension(cdtFileName)}")
+                                    .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                                    .Where(path => Path.GetFileNameWithoutExtension(path) == Path.GetFileNameWithoutExtension(cdtFileName))
+                                    .ToList();
+
+                                if (cdtPaths.Count == 1) {
+                                    var cdtFile = AssetDatabase.LoadAssetAtPath<CdtFile>(cdtPaths[0]);
+                                    var mc = go.AddComponent<MeshCollider>();
+                                    mc.sharedMesh = cdtFile.colliderMesh;
+                                } else {
+                                    Debug.LogWarning($"{path} found {string.Join(",\n", cdtPaths)} as cdt matches");
+                                }
                             } else {
-                                Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as cdt matches");
+                                Debug.LogWarning($"{path} found {string.Join(",\n", adrPaths)} as adr matches");
                             }
-                        } else {
-                            Debug.LogWarning($"{path} found {string.Join(',', adrPaths)} as adr matches");
                         }
+                    } catch (Exception e) {
+                        Debug.LogError($"Individual Collider {path} failed");
+                        Debug.LogException(e);
                     }
                 }
             } catch (Exception e) {
