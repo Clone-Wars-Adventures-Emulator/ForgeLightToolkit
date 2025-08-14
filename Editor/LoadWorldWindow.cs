@@ -235,7 +235,7 @@ namespace ForgeLightToolkit.Editor {
                             continue;
                         }
 
-                        LoadWorld(gzneFile.name);
+                        LoadWorld(gzneFile, worldName);
                     }
                 } catch (Exception e) {
                     Debug.LogError($"Caught Exception when trying to import world(s) {worldName}");
@@ -330,25 +330,19 @@ namespace ForgeLightToolkit.Editor {
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private void LoadWorld(string worldName) {
-            GzneFile gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(Path.Combine(assetsPath, $"{worldName}.gzne"));
-
-            if (gzneFile == null) {
-                return;
-            }
-
-            GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{worldName}.prefab"));
+        private void LoadWorld(GzneFile gzneFile, string loadedWorldName) {
+            GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{loadedWorldName}.prefab"));
             if (loadedWorldObject != null && !overrideWorldPrefabsAndMats && !fastMode) {
                 PrefabUtility.InstantiatePrefab(loadedWorldObject);
                 return;
             }
-            GameObject worldObject = new($"World_{worldName}");
+            GameObject worldObject = new($"World_{loadedWorldName}");
 
             Dictionary<int, RuntimeObject> loadedRuntimeObjects = new();
 
             for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
                 for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
-                    var chunkFileName = $"{worldName}_{x}_{y}";
+                    var chunkFileName = $"{loadedWorldName}_{x}_{y}";
 
                     var gcnkFilePath = Path.Combine(assetsPath, $"{chunkFileName}.gcnk");
 
@@ -466,6 +460,12 @@ namespace ForgeLightToolkit.Editor {
                     }
                 }
             }
+
+
+            // assumes that walls havent already been generated, though to be fair, none of this code really handles updates.
+            // Is it worth investing the time to make FLTK do upserts instead of only adds? TBD
+            addWallsToGameObject(worldObject, gzneFile);
+
             worldObject.transform.localScale = new Vector3(1, 1, -1);
             if (!fastMode) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
@@ -760,6 +760,77 @@ namespace ForgeLightToolkit.Editor {
                 Debug.LogException(e);
             } finally {
                 AssetDatabase.StopAssetEditing();
+            }
+        }
+
+        private static void addWallsToGameObject(GameObject toModify, GzneFile gzneFile) {
+            if (gzneFile.wallMeshes.Count > 0) {
+                var parentGo = new GameObject("InvisibleWalls");
+                parentGo.transform.SetParent(toModify.transform, false);
+
+                foreach (var wallMesh in gzneFile.wallMeshes) {
+                    var wallGo = new GameObject(wallMesh.name);
+                    wallGo.transform.SetParent(parentGo.transform, false);
+                    var meshCollide = wallGo.AddComponent<MeshCollider>();
+                    meshCollide.sharedMesh = wallMesh;
+                }
+            }
+
+        }
+
+        [MenuItem("ForgeLight/Add Invisible Walls to Current World")]
+        public static void AddInvisibleWallsToExistingWorld() {
+            var gameObjects = FindObjectsOfType<GameObject>();
+            List<GameObject> found = new();
+            foreach (var gameObject in gameObjects) {
+                if (gameObject.name.StartsWith("World_")) {
+                    found.Add(gameObject);
+                }
+            }
+
+            if (found.Count == 0) {
+                Debug.LogError("Could not determine the world object for the current scene. Expecting it's name to start with World_");
+                return;
+            }
+            if (found.Count > 1) {
+                Debug.LogError($"Found too many possibly world candidates {found.Count}. Are there multiple worlds loaded?");
+                return;
+            }
+
+            var foundObject = found[0];
+            var worldName = foundObject.name.Replace("World_", "");
+
+            var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{worldName}.gzne\"");
+
+            if (gzneFileAssetGuids.Length == 0) {
+                Debug.LogError($"Could not find a world file to match calculated world name {worldName}");
+                return;
+            }
+            if (gzneFileAssetGuids.Length > 1) {
+                Debug.LogError($"Found {gzneFileAssetGuids.Length} world files to match calculated world name {worldName}, only expecting one...");
+                return;
+            }
+
+            PrefabUtility.EditPrefabContentsScope? scope = null;
+            var toModify = foundObject;
+            if (PrefabUtility.GetPrefabAssetType(foundObject) is PrefabAssetType.Regular or PrefabAssetType.Variant) {
+                scope = new PrefabUtility.EditPrefabContentsScope(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(foundObject));
+                // this'll never be null, but this sure is an interesting pattern (needing to ?. a nullable struct) from C#, thanks microsoft
+                toModify = scope?.prefabContentsRoot;
+            }
+
+            var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(AssetDatabase.GUIDToAssetPath(gzneFileAssetGuids[0]));
+            // only add the walls if there is not already a game object for it
+            var possiblyExistingWallsObj = toModify.transform.Find("InvisibleWalls");
+            if (possiblyExistingWallsObj) {
+                Debug.LogWarning("Walls object already exists, if you want to regenerate the walls objects, delete the existing one.", possiblyExistingWallsObj.gameObject);
+            } else {
+                addWallsToGameObject(toModify, gzneFile);
+            }
+
+            // be a good citizen to the unity world
+            if (scope != null) {
+                scope?.Dispose();
             }
         }
     }
