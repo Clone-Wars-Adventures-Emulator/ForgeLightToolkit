@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using UnityEngine;
@@ -34,10 +34,12 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
                 name = $"{name}_Mesh_{meshIndex}",
             };
 
-            var materialDefinition = MaterialInfo.Instance.MaterialDefinitions.SingleOrDefault(x => x.NameHash == materialEntry.Hash);
+            var materialDefinition = MaterialInfo.Instance?.MaterialDefinitions.SingleOrDefault(x => x.NameHash == materialEntry.Hash);
 
-            if (materialDefinition is null)
+            if (materialDefinition is null) {
+                Debug.LogError("Failed to find material definition.");
                 return false;
+            }
 
             var drawStyle = materialDefinition.DrawStyles.First();
 
@@ -47,7 +49,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
                 return false;
             }
 
-            var inputLayout = MaterialInfo.Instance.InputLayouts.SingleOrDefault(x => x.NameHash == drawStyle.InputLayoutHash);
+            var inputLayout = MaterialInfo.Instance?.InputLayouts.SingleOrDefault(x => x.NameHash == drawStyle.InputLayoutHash);
 
             if (inputLayout is null)
             {
@@ -80,7 +82,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
             }
             else
             {
-                Debug.LogError($"Unimplemented Input Layout Type \"{positionEntry.Type}\" for Normal.");
+                Debug.LogError($"Unimplemented Input Layout Type \"{positionEntry.Type}\" for Position.");
                 return false;
             }
 

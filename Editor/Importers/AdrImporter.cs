@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor.AssetImporters;
 
 using ForgeLightToolkit.Editor.FileTypes;
@@ -18,14 +18,15 @@ namespace ForgeLightToolkit.Editor.Importers
 
             var adrFile = ScriptableObject.CreateInstance<AdrFile>();
 
+            // Logging the error here allows the ADR file to still be searchable in the asset manager with t:adrFile
+            ctx.AddObjectToAsset("Adr", adrFile);
+            ctx.SetMainObject(adrFile);
+
             if (!adrFile.Load(ctx.assetPath))
             {
                 ctx.LogImportError($"Failed to load adr file. ({ctx.assetPath})");
                 return;
             }
-
-            ctx.AddObjectToAsset("Adr", adrFile);
-            ctx.SetMainObject(adrFile);
         }
     }
 }
