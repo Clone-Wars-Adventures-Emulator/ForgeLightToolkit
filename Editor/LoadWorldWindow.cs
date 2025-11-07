@@ -636,9 +636,12 @@ namespace ForgeLightToolkit.Editor {
 
             objectsAlreadyProcessed.Add(runtimeObject.name);
             if (!fastMode) {
+                // save the prefab's position as 0,0,0, transformation should only occur when doing placements
+                runtimeObject.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
                 runtimeObject.transform.localScale = Vector3.one;
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
                 runtimeObject.transform.localScale = Vector3.one * scale;
+                runtimeObject.transform.SetLocalPositionAndRotation(position, Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg));
             }
 
             // only do this after the prefab has been saved, Runtime instance IDs of objects shouldnt be saved in that
