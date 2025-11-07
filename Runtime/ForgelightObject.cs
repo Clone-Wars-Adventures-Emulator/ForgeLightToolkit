@@ -1,7 +1,8 @@
 using UnityEngine;
 
 namespace ForgeLightToolkit.Runtime {
-    // This class exists to persist the ADR and ID of a Forgelight Object during runetime, but mostly editor time. Removing these pre-build is a pain.
+    // This class exists to persist the ADR and ID of a Forgelight Object during runetime, but mostly editor time.
+    // Removing this data pre-build is a pain, so just persist what could be used at runtime in a single object.
     public class ForgelightObject : MonoBehaviour {
         public string adrFileName;
         public int runtimeObjectId;

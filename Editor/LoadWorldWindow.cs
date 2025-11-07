@@ -331,12 +331,16 @@ namespace ForgeLightToolkit.Editor {
 
         // ReSharper disable Unity.PerformanceAnalysis
         private void LoadWorld(GzneFile gzneFile, string loadedWorldName) {
+            // TODO: is it worth looking into handling upserts?
+
             GameObject loadedWorldObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(worldPrefabSavePath, $"World_{loadedWorldName}.prefab"));
             if (loadedWorldObject != null && !overrideWorldPrefabsAndMats && !fastMode) {
                 PrefabUtility.InstantiatePrefab(loadedWorldObject);
                 return;
             }
             GameObject worldObject = new($"World_{loadedWorldName}");
+            var flWorld = worldObject.AddComponent<ForgelightWorld>();
+            flWorld.worldName = loadedWorldName;
 
             Dictionary<int, RuntimeObject> loadedRuntimeObjects = new();
 
@@ -442,7 +446,8 @@ namespace ForgeLightToolkit.Editor {
                             }
                         }
 
-                        foreach (var rawLight in tile.RawLights) {
+                        for (int i = 0; i < tile.RawLights.Count; i++) {
+                            var rawLight = tile.RawLights[i];
                             var lightObject = new GameObject($"Light ({rawLight.Name})") {
                                 transform = {
                                     parent = chunkObject.transform,
@@ -452,19 +457,17 @@ namespace ForgeLightToolkit.Editor {
 
                             Light lightComp = lightObject.AddComponent<Light>();
 
-                            lightComp.range = rawLight.Range;
-                            lightComp.color = rawLight.Color;
-                            lightComp.intensity = rawLight.Intensity;
-                            lightComp.lightmapBakeType = LightmapBakeType.Baked;
+                            SetLightProperties(lightComp, rawLight);
+
+                            // persist this data so that we can reset the light to default via a button in the inspector if we want to
+                            var flLight = lightObject.AddComponent<ForgelightLight>();
+                            flLight.uniqueLightId = ForgelightLight.CreateUniqueLightId(tile.Coords.x, tile.Coords.y, i, rawLight.ColorName);
                         }
                     }
                 }
             }
 
-
-            // assumes that walls havent already been generated, though to be fair, none of this code really handles updates.
-            // Is it worth investing the time to make FLTK do upserts instead of only adds? TBD
-            addWallsToGameObject(worldObject, gzneFile);
+            addWallsToGameObject(flWorld, gzneFile);
 
             worldObject.transform.localScale = new Vector3(1, 1, -1);
             if (!fastMode) {
@@ -476,6 +479,7 @@ namespace ForgeLightToolkit.Editor {
         private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, int runtimeId = 0) {
             var adrFilePath = Path.Combine(assetsPath, adrFileName);
             var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
+
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
             if (existingPrefab != null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
@@ -766,14 +770,17 @@ namespace ForgeLightToolkit.Editor {
             }
         }
 
-        private static void addWallsToGameObject(GameObject toModify, GzneFile gzneFile) {
+        private static void addWallsToGameObject(ForgelightWorld toModify, GzneFile gzneFile) {
             if (gzneFile.wallMeshes.Count > 0) {
-                var parentGo = new GameObject("InvisibleWalls");
-                parentGo.transform.SetParent(toModify.transform, false);
+                if (toModify.invisibleWallsRoot == null) {
+                    var parentGo = new GameObject("InvisibleWalls");
+                    parentGo.transform.SetParent(toModify.transform, false);
+                    toModify.invisibleWallsRoot = parentGo.transform;
+                }
 
                 foreach (var wallMesh in gzneFile.wallMeshes) {
                     var wallGo = new GameObject(wallMesh.name);
-                    wallGo.transform.SetParent(parentGo.transform, false);
+                    wallGo.transform.SetParent(toModify.invisibleWallsRoot, false);
                     var meshCollide = wallGo.AddComponent<MeshCollider>();
                     meshCollide.sharedMesh = wallMesh;
                 }
@@ -783,6 +790,8 @@ namespace ForgeLightToolkit.Editor {
 
         [MenuItem("ForgeLight/Add Invisible Walls to Current World")]
         public static void AddInvisibleWallsToExistingWorld() {
+            // TODO: do i make this only use ForgelightWorld or do i keep the old way in?
+
             var gameObjects = FindObjectsOfType<GameObject>();
             List<GameObject> found = new();
             foreach (var gameObject in gameObjects) {
@@ -802,15 +811,8 @@ namespace ForgeLightToolkit.Editor {
 
             var foundObject = found[0];
             var worldName = foundObject.name.Replace("World_", "");
-
-            var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{worldName}.gzne\"");
-
-            if (gzneFileAssetGuids.Length == 0) {
-                Debug.LogError($"Could not find a world file to match calculated world name {worldName}");
-                return;
-            }
-            if (gzneFileAssetGuids.Length > 1) {
-                Debug.LogError($"Found {gzneFileAssetGuids.Length} world files to match calculated world name {worldName}, only expecting one...");
+            var gzneFile = FindSingularGzne(worldName);
+            if (gzneFile == null) {
                 return;
             }
 
@@ -822,19 +824,68 @@ namespace ForgeLightToolkit.Editor {
                 toModify = scope?.prefabContentsRoot;
             }
 
-            var gzneFile = AssetDatabase.LoadAssetAtPath<GzneFile>(AssetDatabase.GUIDToAssetPath(gzneFileAssetGuids[0]));
             // only add the walls if there is not already a game object for it
             var possiblyExistingWallsObj = toModify.transform.Find("InvisibleWalls");
             if (possiblyExistingWallsObj) {
                 Debug.LogWarning("Walls object already exists, if you want to regenerate the walls objects, delete the existing one.", possiblyExistingWallsObj.gameObject);
             } else {
-                addWallsToGameObject(toModify, gzneFile);
+                if (!toModify.TryGetComponent<ForgelightWorld>(out var world)) {
+                    world = toModify.AddComponent<ForgelightWorld>();
+                    world.worldName = worldName;
+                }
+
+                addWallsToGameObject(world, gzneFile);
             }
 
             // be a good citizen to the unity world
             if (scope != null) {
                 scope?.Dispose();
             }
+        }
+
+        public static GzneFile FindSingularGzne(string worldName) {
+            var gzneFileAssetGuids = AssetDatabase.FindAssets($"glob:\"{worldName}.gzne\"");
+
+            if (gzneFileAssetGuids.Length == 0) {
+                Debug.LogError($"Could not find a world file to match calculated world name {worldName}");
+                return null;
+            }
+            if (gzneFileAssetGuids.Length > 1) {
+                Debug.LogError($"Found {gzneFileAssetGuids.Length} world files to match calculated world name {worldName}, only expecting one...");
+                return null;
+            }
+            return AssetDatabase.LoadAssetAtPath<GzneFile>(AssetDatabase.GUIDToAssetPath(gzneFileAssetGuids[0]));
+        }
+
+        public static GcnkFile[] FindTilesForWorld(GzneFile gzneFile) {
+            string worldName = gzneFile.name;
+
+            List<GcnkFile> chunks = new();
+            for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
+                for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
+                    var chunkFileName = $"{worldName}_{x}_{y}";
+
+                    var gcnkFileAssetPaths = AssetDatabase.FindAssets($"glob:\"{chunkFileName}.gcnk\"").Select(AssetDatabase.GUIDToAssetPath).ToArray();
+                    if (gcnkFileAssetPaths.Length == 0) {
+                        continue;
+                    }
+                    if (gcnkFileAssetPaths.Length > 1) {
+                        Debug.LogError($"Found {gcnkFileAssetPaths.Length} cunk files for {chunkFileName}, only expecting one...\nUsing the first one at {gcnkFileAssetPaths[0]}");
+                    }
+
+                    var chunk = AssetDatabase.LoadAssetAtPath<GcnkFile>(gcnkFileAssetPaths[0]);
+                    chunks.Add(chunk);
+                }
+            }
+
+            return chunks.ToArray();
+        }
+
+        public static void SetLightProperties(Light unityLight, RawLight rawLight) {
+            unityLight.range = rawLight.Range;
+            unityLight.color = rawLight.Color;
+            unityLight.intensity = rawLight.Intensity;
+            unityLight.lightmapBakeType = LightmapBakeType.Baked;
         }
     }
 }
