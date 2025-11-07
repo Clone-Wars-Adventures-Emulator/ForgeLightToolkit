@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor.AssetImporters;
 
 using ForgeLightToolkit.Editor.FileTypes;
@@ -18,14 +18,14 @@ namespace ForgeLightToolkit.Editor.Importers
 
             var dmeFile = ScriptableObject.CreateInstance<DmeFile>();
 
-            if (!dmeFile.Load(ctx.assetPath))
-            {
+            ctx.AddObjectToAsset("Dme", dmeFile);
+            ctx.SetMainObject(dmeFile);
+
+            // Logging the error here allows the DME file to still be searchable in the asset manager with t:dmeFile
+            if (!dmeFile.Load(ctx.assetPath)) {
                 ctx.LogImportError($"Failed to load dme file. ({ctx.assetPath})");
                 return;
             }
-
-            ctx.AddObjectToAsset("Dme", dmeFile);
-            ctx.SetMainObject(dmeFile);
 
             ctx.AddObjectToAsset("Dma", dmeFile.DmaFile);
 

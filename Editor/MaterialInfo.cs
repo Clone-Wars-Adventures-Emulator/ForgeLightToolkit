@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml.Serialization;
 using System.Collections.Generic;
@@ -6,23 +6,19 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor
-{
+namespace ForgeLightToolkit.Editor {
     [XmlRoot("MaterialInfo")]
-    public class MaterialInfo
-    {
-        private MaterialInfo()
-        {
+    public class MaterialInfo {
+        private MaterialInfo() {
         }
 
         public static MaterialInfo Instance => _instance.Value;
 
-        private static readonly Lazy<MaterialInfo> _instance = new(() =>
-        {
+        private static Lazy<MaterialInfo> _instance = new(CreateMaterialInfo);
+        private static MaterialInfo CreateMaterialInfo() {
             var materialInfoData = AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.hybr2d.forgelighttoolkit/Editor/Assets/materials_3.xml");
 
-            if (materialInfoData is null)
-            {
+            if (materialInfoData == null) {
                 Debug.LogError("Failed to find materials_3.xml.");
                 return null;
             }
@@ -32,21 +28,31 @@ namespace ForgeLightToolkit.Editor
             var serializer = new XmlSerializer(typeof(MaterialInfo));
 
             return serializer.Deserialize(fileStream) as MaterialInfo;
-        });
+        }
+
+        [MenuItem("ForgeLight/Reload Material Info")]
+        private static void ReloadMaterialInfoInstance() {
+            var materialInfoData = AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.hybr2d.forgelighttoolkit/Editor/Assets/materials_3.xml");
+
+            if (materialInfoData == null) {
+                Debug.LogError("Failed to find materials_3.xml at expected location. Consider closing and reopening the Unity Editor.");
+                return;
+            }
+
+            _instance = new(CreateMaterialInfo);
+        }
+
 
         [XmlElement("InputLayout")]
         public List<InputLayout> InputLayouts { get; set; } = null!;
 
-        public class InputLayout
-        {
+        public class InputLayout {
             private string _name = null!;
 
             [XmlAttribute]
-            public string Name
-            {
+            public string Name {
                 get => _name;
-                set
-                {
+                set {
                     _name = value;
                     NameHash = JenkinsHelper.JenkinsOneAtATimeHash(_name);
                 }
@@ -58,8 +64,7 @@ namespace ForgeLightToolkit.Editor
             [XmlElement("Entry")]
             public List<Entry> Entries { get; set; } = null!;
 
-            public class Entry
-            {
+            public class Entry {
                 [XmlAttribute]
                 public int Stream { get; set; }
 
@@ -69,8 +74,7 @@ namespace ForgeLightToolkit.Editor
                 [XmlAttribute]
                 public EntryType Type { get; set; }
 
-                public enum EntryType
-                {
+                public enum EntryType {
                     [XmlEnum("Float1")] Float1,
                     [XmlEnum("Float2")] Float2,
                     [XmlEnum("Float3")] Float3,
@@ -93,8 +97,7 @@ namespace ForgeLightToolkit.Editor
                 [XmlAttribute]
                 public EntryUsage Usage { get; set; }
 
-                public enum EntryUsage
-                {
+                public enum EntryUsage {
                     [XmlEnum("Position")] Position,
                     [XmlEnum("BlendWeight")] BlendWeight,
                     [XmlEnum("BlendIndices")] BlendIndices,
@@ -117,16 +120,13 @@ namespace ForgeLightToolkit.Editor
         [XmlElement("ParameterGroup")]
         public List<ParameterGroup> ParameterGroups { get; set; } = null!;
 
-        public class ParameterGroup
-        {
+        public class ParameterGroup {
             private string _name = null!;
 
             [XmlAttribute]
-            public string Name
-            {
+            public string Name {
                 get => _name;
-                set
-                {
+                set {
                     _name = value;
                     NameHash = JenkinsHelper.JenkinsOneAtATimeHash(_name);
                 }
@@ -138,16 +138,13 @@ namespace ForgeLightToolkit.Editor
             [XmlElement("Parameter")]
             public List<Parameter> Parameters { get; set; } = null!;
 
-            public class Parameter
-            {
+            public class Parameter {
                 private string _name = null!;
 
                 [XmlAttribute]
-                public string Name
-                {
+                public string Name {
                     get => _name;
-                    set
-                    {
+                    set {
                         _name = value;
                         NameHash = JenkinsHelper.JenkinsOneAtATimeHash(_name);
                     }
@@ -159,11 +156,9 @@ namespace ForgeLightToolkit.Editor
                 private string _variable = null!;
 
                 [XmlAttribute]
-                public string Variable
-                {
+                public string Variable {
                     get => _variable;
-                    set
-                    {
+                    set {
                         _variable = value;
                         VariableHash = JenkinsHelper.JenkinsOneAtATimeHash(_variable);
                     }
@@ -175,8 +170,7 @@ namespace ForgeLightToolkit.Editor
                 [XmlAttribute]
                 public ParameterType Type { get; set; }
 
-                public enum ParameterType
-                {
+                public enum ParameterType {
                     [XmlEnum("Int")] Int,
                     [XmlEnum("Float")] Float,
                     [XmlEnum("Float4")] Float4,
@@ -206,16 +200,13 @@ namespace ForgeLightToolkit.Editor
         [XmlElement("MaterialDefinition")]
         public List<MaterialDefinition> MaterialDefinitions { get; set; } = null!;
 
-        public class MaterialDefinition
-        {
+        public class MaterialDefinition {
             private string _name = null!;
 
             [XmlAttribute]
-            public string Name
-            {
+            public string Name {
                 get => _name;
-                set
-                {
+                set {
                     _name = value;
                     NameHash = JenkinsHelper.JenkinsOneAtATimeHash(_name);
                 }
@@ -230,19 +221,16 @@ namespace ForgeLightToolkit.Editor
             [XmlElement("DrawStyle")]
             public List<DrawStyle> DrawStyles { get; set; } = null!;
 
-            public class DrawStyle
-            {
+            public class DrawStyle {
                 [XmlAttribute]
                 public string Name { get; set; } = null!;
 
                 private string _effect = null!;
 
                 [XmlAttribute]
-                public string Effect
-                {
+                public string Effect {
                     get => _effect;
-                    set
-                    {
+                    set {
                         _effect = value;
                         EffectHash = JenkinsHelper.JenkinsOneAtATimeHash(_effect);
                     }
@@ -254,11 +242,9 @@ namespace ForgeLightToolkit.Editor
                 private string _inputLayout = null!;
 
                 [XmlAttribute]
-                public string InputLayout
-                {
+                public string InputLayout {
                     get => _inputLayout;
-                    set
-                    {
+                    set {
                         _inputLayout = value;
                         InputLayoutHash = JenkinsHelper.JenkinsOneAtATimeHash(_inputLayout);
                     }
@@ -271,16 +257,13 @@ namespace ForgeLightToolkit.Editor
             [XmlElement("Property")]
             public List<Property> Properties { get; set; } = null!;
 
-            public class Property
-            {
+            public class Property {
                 private string _name = null!;
 
                 [XmlAttribute]
-                public string Name
-                {
+                public string Name {
                     get => _name;
-                    set
-                    {
+                    set {
                         _name = value;
                         NameHash = JenkinsHelper.JenkinsOneAtATimeHash(_name);
                     }
