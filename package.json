@@ -1,10 +1,10 @@
 {
   "name": "com.hybr2d.forgelighttoolkit",
-  "version": "2.3.0-Fork",
+  "version": "2.4.0-Fork",
   "displayName": "ForgeLight Toolkit",
   "description": "ForgeLight Toolkit allows you to import and use ForgeLight assets in Unity.",
   "unity": "2021.3",
-  "unityRelease": "12f1",
+  "unityRelease": "45f2",
   "keywords": [
     "ForgeLight",
     "Clone Wars Adventures",
