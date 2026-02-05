@@ -35,6 +35,9 @@ namespace ForgeLightToolkit.Editor.FileTypes
         [HideInInspector]
         public Mesh Mesh;
 
+        [HideInInspector]
+        public List<(Vector4, Vector4)> BvhNodes = new();
+
         public bool Load(string filePath)
         {
             name = Path.GetFileNameWithoutExtension(filePath);
@@ -86,7 +89,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             collisionDecompressedStream.Position = 0;
 
-            if (!LoadCollision(chunkDecompressedStream))
+            if (!LoadCollision(collisionDecompressedStream))
                 return false;
 
             if (!CreateChunkMesh())
@@ -207,7 +210,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var aabbMaxY = reader.ReadUInt16();
                         var aabbMaxZ = reader.ReadUInt16();
                         var escapeIndex = reader.ReadInt32();
-
+                
                         var size = new Vector3(
                             (float) (aabbMaxX - aabbMinX),
                             (float) (aabbMaxY - aabbMinY),
@@ -220,8 +223,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
                             (float) aabbMinZ + size.z / 2.0f
                         );
 
-                        Gizmos.color = Color.blue;
-                        Gizmos.DrawWireCube(center, size);
+                        BvhNodes.Add((center, size));
                     }
                     else
                     {
@@ -231,6 +233,20 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var subPart = reader.ReadInt32();
                         var triangleIndex = reader.ReadInt32();
                         reader.Skip(20);
+
+                        var size = new Vector3(
+                            aabbMaxNode.x - aabbMinNode.x,
+                            aabbMaxNode.y - aabbMinNode.y,
+                            aabbMaxNode.z - aabbMinNode.z
+                        );
+
+                        var center = new Vector3(
+                            aabbMinNode.x + size.x / 2.0f,
+                            aabbMinNode.y + size.y / 2.0f,
+                            aabbMinNode.z + size.z / 2.0f
+                        );
+
+                        BvhNodes.Add((center, size));
                     }
                 }
 
