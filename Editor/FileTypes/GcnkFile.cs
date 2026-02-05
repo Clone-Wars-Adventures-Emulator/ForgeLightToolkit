@@ -226,7 +226,67 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
         private bool LoadCollision(Stream collisionStream)
         {
-            // TODO: Bullet Physics
+            var reader = new Reader(collisionStream);
+
+            while (!reader.ReachedEnd && reader.ReadInt32() > 0)
+            {
+                reader.Skip(28);
+                var aabbMin = reader.ReadVector4();
+                var aabbMax = reader.ReadVector4();
+                var quantization = reader.ReadVector4();
+                var bulletVersion = reader.ReadInt32();
+                var nodeCount = reader.ReadInt32();
+                var useQuantization = reader.ReadByte() != 0;
+
+                reader.Skip(83);
+                var traversalMode = reader.ReadInt32();
+                reader.Skip(20);
+                var subtreeHeaderCount = reader.ReadInt32();
+                reader.Skip(8);
+
+                for (var i = 0; i < nodeCount; i++)
+                {
+                    if (useQuantization)
+                    {
+                        var aabbMinX = reader.ReadUInt16();
+                        var aabbMinY = reader.ReadUInt16();
+                        var aabbMinZ = reader.ReadUInt16();
+                        var aabbMaxX = reader.ReadUInt16();
+                        var aabbMaxY = reader.ReadUInt16();
+                        var aabbMaxZ = reader.ReadUInt16();
+                        var escapeIndex = reader.ReadInt32();
+
+                        var size = new Vector3(
+                            (float) (aabbMaxX - aabbMinX),
+                            (float) (aabbMaxY - aabbMinY),
+                            (float) (aabbMaxZ - aabbMinZ)
+                        );
+
+                        var center = new Vector3(
+                            (float) aabbMinX + size.x / 2.0f,
+                            (float) aabbMinY + size.y / 2.0f,
+                            (float) aabbMinZ + size.z / 2.0f
+                        );
+
+                        Gizmos.color = Color.blue;
+                        Gizmos.DrawWireCube(center, size);
+                    }
+                    else
+                    {
+                        var aabbMinNode = reader.ReadVector4();
+                        var aabbMaxNode = reader.ReadVector4();
+                        var escapeIndex = reader.ReadInt32();
+                        var subPart = reader.ReadInt32();
+                        var triangleIndex = reader.ReadInt32();
+                        reader.Skip(20);
+                    }
+                }
+
+                for (var i = 0; i < subtreeHeaderCount; i++)
+                {
+                    reader.Skip(32);
+                }
+            }
 
             return true;
         }
