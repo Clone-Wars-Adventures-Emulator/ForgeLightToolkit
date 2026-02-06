@@ -269,9 +269,9 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         );
 
                         var center = new Vector3(
-                            (float) aabbMinX / quantization.x + size.x / 2.0f,
-                            (float) aabbMinY / quantization.y + size.y / 2.0f,
-                            (float) aabbMinZ / quantization.z + size.z / 2.0f
+                            (float) aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,
+                            (float) aabbMinY / quantization.y + size.y / 2.0f + aabbMin.y,
+                            (float) aabbMinZ / quantization.z + size.z / 2.0f + aabbMin.z
                         );
 
                         BvhCenters.Add(center);
