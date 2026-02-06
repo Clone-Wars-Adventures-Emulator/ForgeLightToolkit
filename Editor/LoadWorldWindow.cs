@@ -356,16 +356,15 @@ namespace ForgeLightToolkit.Editor {
                         continue;
                     }
 
-                    foreach (var bvhNode in gcnkFile.BvhNodes) {
-                        Gizmos.color = Color.blue;
-                        Gizmos.DrawWireCube(bvhNode.Item1, bvhNode.Item2);
-                    }
-
                     var chunkObject = new GameObject($"Chunk ({gcnkFile.Coords.x}, {gcnkFile.Coords.y})") {
                         transform = {
                             parent = worldObject.transform
                         }
                     };
+
+                    var collisionGizmo = chunkObject.AddComponent<CollisionGizmo>();
+                    collisionGizmo.BvhCenters = gcnkFile.BvhCenters;
+                    collisionGizmo.BvhSizes = gcnkFile.BvhSizes;
 
                     if (!gzneFile.HideTerrain) {
                         var chunkMeshFilter = chunkObject.AddComponent<MeshFilter>();

@@ -36,7 +36,10 @@ namespace ForgeLightToolkit.Editor.FileTypes
         public Mesh Mesh;
 
         [HideInInspector]
-        public List<(Vector4, Vector4)> BvhNodes = new();
+        public List<Vector4> BvhCenters = new();
+
+        [HideInInspector]
+        public List<Vector4> BvhSizes = new();
 
         public bool Load(string filePath)
         {
@@ -271,7 +274,8 @@ namespace ForgeLightToolkit.Editor.FileTypes
                             (float) aabbMinZ + size.z / 2.0f
                         );
 
-                        BvhNodes.Add((center, size));
+                        BvhCenters.Add(center);
+                        BvhSizes.Add(size);
                     }
                     else
                     {
@@ -294,7 +298,8 @@ namespace ForgeLightToolkit.Editor.FileTypes
                             aabbMinNode.z + size.z / 2.0f
                         );
 
-                        BvhNodes.Add((center, size));
+                        BvhCenters.Add(center);
+                        BvhSizes.Add(size);
                     }
                 }
 
