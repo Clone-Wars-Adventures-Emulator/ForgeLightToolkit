@@ -215,15 +215,15 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var escapeIndex = reader.ReadInt32();
                 
                         var size = new Vector3(
-                            (float) (aabbMaxX - aabbMinX),
-                            (float) (aabbMaxY - aabbMinY),
-                            (float) (aabbMaxZ - aabbMinZ)
+                            (float) (aabbMaxX - aabbMinX) / quantization.x,
+                            (float) (aabbMaxY - aabbMinY) / quantization.y,
+                            (float) (aabbMaxZ - aabbMinZ) / quantization.z
                         );
 
                         var center = new Vector3(
-                            (float) aabbMinX + size.x / 2.0f,
-                            (float) aabbMinY + size.y / 2.0f,
-                            (float) aabbMinZ + size.z / 2.0f
+                            (float) aabbMinX / quantization.x + size.x / 2.0f,
+                            (float) aabbMinY / quantization.y + size.y / 2.0f,
+                            (float) aabbMinZ / quantization.z + size.z / 2.0f
                         );
 
                         BvhCenters.Add(center);
