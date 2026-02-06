@@ -252,6 +252,8 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
                 for (var i = 0; i < nodeCount; i++)
                 {
+                    Vector3 size;
+                    Vector3 center;
                     if (useQuantization)
                     {
                         var aabbMinX = reader.ReadUInt16();
@@ -262,20 +264,16 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var aabbMaxZ = reader.ReadUInt16();
                         var escapeIndex = reader.ReadInt32();
                 
-                        var size = new Vector3(
+                        size = new Vector3(
                             (float) (aabbMaxX - aabbMinX) / quantization.x,
                             (float) (aabbMaxY - aabbMinY) / quantization.y,
                             (float) (aabbMaxZ - aabbMinZ) / quantization.z
                         );
-
-                        var center = new Vector3(
+                        center = new Vector3(
                             (float) aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,
                             (float) aabbMinY / quantization.y + size.y / 2.0f + aabbMin.y,
                             (float) aabbMinZ / quantization.z + size.z / 2.0f + aabbMin.z
                         );
-
-                        BvhCenters.Add(center);
-                        BvhSizes.Add(size);
                     }
                     else
                     {
@@ -286,13 +284,12 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var triangleIndex = reader.ReadInt32();
                         reader.Skip(20);
 
-                        var size = new Vector3(
+                        size = new Vector3(
                             aabbMaxNode.x - aabbMinNode.x,
                             aabbMaxNode.y - aabbMinNode.y,
                             aabbMaxNode.z - aabbMinNode.z
                         );
-
-                        var center = new Vector3(
+                        center = new Vector3(
                             aabbMinNode.x + size.x / 2.0f,
                             aabbMinNode.y + size.y / 2.0f,
                             aabbMinNode.z + size.z / 2.0f
@@ -301,6 +298,11 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         BvhCenters.Add(center);
                         BvhSizes.Add(size);
                     }
+
+                    center.z = -center.z;
+
+                    BvhCenters.Add(center);
+                    BvhSizes.Add(size);
                 }
 
                 for (var i = 0; i < subtreeHeaderCount; i++)
