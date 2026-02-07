@@ -41,6 +41,9 @@ namespace ForgeLightToolkit.Editor.FileTypes
         [HideInInspector]
         public List<Vector4> BvhSizes = new();
 
+        [HideInInspector]
+        public int[] Depth;
+
         public bool Load(string filePath)
         {
             name = Path.GetFileNameWithoutExtension(filePath);
@@ -250,10 +253,13 @@ namespace ForgeLightToolkit.Editor.FileTypes
                 var subtreeHeaderCount = reader.ReadInt32();
                 reader.Skip(8);
 
+                int?[] escapeIndices = new int?[nodeCount];
+
                 for (var i = 0; i < nodeCount; i++)
                 {
                     Vector3 size;
                     Vector3 center;
+                    int? escapeIndex = null;
                     if (useQuantization)
                     {
                         var aabbMinX = reader.ReadUInt16();
@@ -262,7 +268,11 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var aabbMaxX = reader.ReadUInt16();
                         var aabbMaxY = reader.ReadUInt16();
                         var aabbMaxZ = reader.ReadUInt16();
-                        var escapeIndex = reader.ReadInt32();
+                        var escapeOrTriangleIndex = reader.ReadInt32();
+                        if (escapeOrTriangleIndex < 0)
+                        {
+                            escapeIndex = -escapeOrTriangleIndex;
+                        }
                 
                         size = new Vector3(
                             (float) (aabbMaxX - aabbMinX) / quantization.x,
@@ -279,7 +289,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
                     {
                         var aabbMinNode = reader.ReadVector4();
                         var aabbMaxNode = reader.ReadVector4();
-                        var escapeIndex = reader.ReadInt32();
+                        escapeIndex = reader.ReadInt32();
                         var subPart = reader.ReadInt32();
                         var triangleIndex = reader.ReadInt32();
                         reader.Skip(20);
@@ -303,6 +313,26 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
                     BvhCenters.Add(center);
                     BvhSizes.Add(size);
+
+                    escapeIndices[i] = escapeIndex;
+                }
+
+                Depth = new int[nodeCount];
+                if (nodeCount > 0)
+                {
+                    for (var i = 0; i < nodeCount; i++)
+                    {
+                        if (i + 1 < nodeCount)
+                        {
+                            Depth[i + 1] = Math.Min(Depth[i + 1], Depth[i] + 1);
+                        }
+
+                        var escapeIndex = escapeIndices[i];
+                        if (escapeIndex != null && escapeIndex < nodeCount)
+                        {
+                            Depth[(int) escapeIndex] = Math.Min(Depth[(int) escapeIndex], Depth[i] + 1);
+                        }
+                    }
                 }
 
                 for (var i = 0; i < subtreeHeaderCount; i++)

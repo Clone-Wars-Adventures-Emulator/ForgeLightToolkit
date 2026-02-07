@@ -365,6 +365,7 @@ namespace ForgeLightToolkit.Editor {
                     var collisionGizmo = chunkObject.AddComponent<CollisionGizmo>();
                     collisionGizmo.BvhCenters = gcnkFile.BvhCenters;
                     collisionGizmo.BvhSizes = gcnkFile.BvhSizes;
+                    collisionGizmo.Depth = gcnkFile.Depth;
 
                     if (!gzneFile.HideTerrain) {
                         var chunkMeshFilter = chunkObject.AddComponent<MeshFilter>();
