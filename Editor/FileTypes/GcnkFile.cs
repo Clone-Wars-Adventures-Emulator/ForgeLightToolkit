@@ -42,7 +42,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
         public List<Vector4> BvhSizes = new();
 
         [HideInInspector]
-        public List<int> Depth;
+        public int[] Depth;
 
         public bool Load(string filePath)
         {
@@ -269,24 +269,27 @@ namespace ForgeLightToolkit.Editor.FileTypes
                     escapeIndices[i] = escapeIndex;
                 }
 
-                int[] depth = new int[nodeCount];
+                Depth = new int[nodeCount];
+                Array.Fill(Depth, int.MaxValue);
                 if (nodeCount > 0)
                 {
+                    Depth[0] = 0;
                     for (var i = 0; i < nodeCount; i++)
                     {
+                        // Left child
                         if (i + 1 < nodeCount)
                         {
-                            depth[i + 1] = Math.Min(depth[i + 1], depth[i] + 1);
+                            Depth[i + 1] = Math.Min(Depth[i + 1], Depth[i] + 1);
                         }
 
+                        // Right child
                         var escapeIndex = escapeIndices[i];
                         if (escapeIndex != null && escapeIndex < nodeCount)
                         {
-                            depth[(int) escapeIndex] = Math.Min(depth[(int) escapeIndex], depth[i] + 1);
+                            Depth[(int) escapeIndex] = Math.Min(Depth[(int) escapeIndex], Depth[i] + 1);
                         }
                     }
                 }
-                Depth = new List<int>(depth);
 
                 for (var i = 0; i < subtreeHeaderCount; i++)
                 {
