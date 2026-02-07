@@ -8,7 +8,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
     {
         public List<Vector4> BvhCenters = new();
         public List<Vector4> BvhSizes = new();
-        public int[] Depth;
+        public List<int> Depth;
 
         void OnDrawGizmos()
         {
