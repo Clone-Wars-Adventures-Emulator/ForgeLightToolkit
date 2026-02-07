@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -8,15 +9,13 @@ namespace ForgeLightToolkit.Editor.FileTypes
     {
         public List<Vector4> BvhCenters = new();
         public List<Vector4> BvhSizes = new();
-        public List<int> Depth;
+        public List<Color> Colors = new();
 
         void OnDrawGizmos()
         {
-            Color[] colors = {Color.purple, Color.blue, Color.green, Color.yellow, Color.orange, Color.red};
             for (var i = 0; i < BvhCenters.Count; i++)
             {
-                var colorIndex = Depth[i] % colors.Length;
-                Gizmos.color = colors[colorIndex];
+                Gizmos.color = Colors[i];
                 Gizmos.DrawWireCube(BvhCenters[i], BvhSizes[i]);
             }
         }
