@@ -153,7 +153,11 @@ namespace ForgeLightToolkit.Editor
                 int max = gcnkFile.Depth.Max();
                 for (var i = 0; i < gcnkFile.Depth.Count; i++)
                 {
-                    var alpha = (float) gcnkFile.Depth[i] / max;
+                    var alpha = 1.0f;
+                    if (max > 0)
+                    {
+                        alpha = (float) gcnkFile.Depth[i] / max;
+                    }
                     collisionGizmo.Colors.Add(new Color(0f, 0f, 1f, alpha));
                 }
 
