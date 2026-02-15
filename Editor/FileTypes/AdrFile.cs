@@ -36,13 +36,6 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             LookControl = 0x16,
         }
 
-        public enum EnumModelDataFieldType : byte {
-            Unknown = 0,
-            ModelFile = 1,
-            MaterialFile = 2,
-            UpdateRadius = 3,
-        }
-
         // TODO: investigate defaults for all of this
         public string skeletonFileName;
         public float skeletonScale = 1.0f;
@@ -50,6 +43,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         public string modelFileName;
         public string materialFileName;
         public float updateRadius;
+        public byte objectTerrainDataId;
 
         public string collisionFile;
 
@@ -61,9 +55,15 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         // The name of this is weird, does this mean we need to validate the object when it is used by a player and non player character? wouldnt that just be all characters???
         public bool validatePcNpc;
         public bool inheritAnimations;
+        public string replicationBone;
 
         public bool coversFacialHair;
+        public byte hatHairType;
 
+        // is this actually a bool? its only used in one place
+        public byte equipType;
+        public string parentAttachSlot;
+        public string childAttachSlot;
         public string equippedSlot;
 
         public MountData mountData;
@@ -198,6 +198,13 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         #endregion
 
         #region ADR Type 0x02, Model Definition
+        public enum EnumModelDataFieldType : byte {
+            Unknown = 0,
+            ModelFile = 1,
+            MaterialFile = 2,
+            UpdateRadius = 3,
+            ObjectTerrainDataId = 5,
+        }
         private void ParseModelDefinition(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
 
@@ -214,6 +221,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         break;
                     case EnumModelDataFieldType.UpdateRadius:
                         updateRadius = reader.ReadAdrFloat();
+                        break;
+                    case EnumModelDataFieldType.ObjectTerrainDataId:
+                        objectTerrainDataId = reader.ReadByte();
                         break;
                     case (EnumModelDataFieldType) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -246,7 +256,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             OffsetZ = 9,
             EmitterFile = 0x0a,
             UnknownBoneString = 0x0b,
+            LocalSpace = 0x0c,
             WorldOrientation = 0x0d,
+            HardStop = 0x0e,
         }
         private ParticleEmitterDefinition ParseParticleEmitterData(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
@@ -291,8 +303,14 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                     case EnumParticleDataFieldType.EmitterFile:
                         defn.effectFileName = reader.ReadNullTerminatedString();
                         break;
+                    case EnumParticleDataFieldType.LocalSpace:
+                        defn.localSpace = reader.ReadBool();
+                        break;
                     case EnumParticleDataFieldType.WorldOrientation:
                         defn.worldOrientation = reader.ReadBool();
+                        break;
+                    case EnumParticleDataFieldType.HardStop:
+                        defn.hardStop = reader.ReadBool();
                         break;
                     case (EnumParticleDataFieldType) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -345,6 +363,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         public enum EnumMaterialMappingField : byte {
             Name = 1,
             SemanticHash = 2,
+            UnknownHash = 3,
         }
         private MaterialMapping ParseMaterialMapping(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
@@ -360,6 +379,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         break;
                     case EnumMaterialMappingField.SemanticHash:
                         mapping.hash = reader.ReadUInt32();
+                        break;
+                    case EnumMaterialMappingField.UnknownHash:
+                        mapping.anotherHash = reader.ReadUInt32();
                         break;
                     case (EnumMaterialMappingField) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -598,6 +620,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         #region ADR Type 0x07, Effect
         public enum EnumEffectField : byte {
+            Type = 2,
             Name = 3,
             ToolName = 4,
             Id = 5,
@@ -611,6 +634,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 var definitionSize = reader.ReadCompressedLength();
 
                 switch (definitionType) {
+                    case EnumEffectField.Type:
+                        effect.type = reader.ReadByte();
+                        break;
                     case EnumEffectField.Name:
                         effect.name = reader.ReadNullTerminatedString();
                         break;
@@ -672,8 +698,10 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         public enum EnumAnimationDataField : byte {
             Name = 1,
             FileName = 2,
+            Scale = 3,
             Duration = 4,
             LoadType = 5,
+            EffectsPersist = 7,
         }
         private AnimationData ParseAnimationData(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
@@ -690,11 +718,17 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                     case EnumAnimationDataField.FileName:
                         anim.fileName = reader.ReadNullTerminatedString();
                         break;
+                    case EnumAnimationDataField.Scale:
+                        anim.playbackScale = reader.ReadAdrFloat();
+                        break;
                     case EnumAnimationDataField.Duration:
                         anim.duration = reader.ReadAdrFloat();
                         break;
                     case EnumAnimationDataField.LoadType:
                         anim.loadType = reader.ReadByte();
+                        break;
+                    case EnumAnimationDataField.EffectsPersist:
+                        anim.effectsPersist = reader.ReadBool();
                         break;
                     case  (EnumAnimationDataField) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -786,6 +820,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             ToolName = 4,
             Id = 5,
             PlayOnce = 6,
+            LoadType = 7,
         }
         private AnimationSoundEntry ParseAnimationSound(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
@@ -810,6 +845,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         break;
                     case EnumAnimationSoundField.PlayOnce:
                         sound.playOnce = reader.ReadBool();
+                        break;
+                    case EnumAnimationSoundField.LoadType:
+                        sound.loadType = reader.ReadByte();
                         break;
                     case EnumAnimationSoundField.TriggerEvents:
                         sound.events.Add(ParseTriggerEvent(reader.ReadBytes(definitionSize), adrFilePath));
@@ -904,6 +942,8 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             Name = 3,
             ToolName = 4,
             Id = 5,
+            PlayOnce = 6,
+            LoadType = 7,
         }
         private AnimationParticleEntry ParseAnimationParticle(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
@@ -925,6 +965,12 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         break;
                     case EnumAnimationParticleField.TriggerEvents:
                         particle.events.Add(ParseTriggerEvent(reader.ReadBytes(definitionSize), adrFilePath));
+                        break;
+                    case EnumAnimationParticleField.PlayOnce:
+                        particle.playOnce = reader.ReadBool();
+                        break;
+                    case EnumAnimationParticleField.LoadType:
+                        particle.loadType = reader.ReadByte();
                         break;
                     case (EnumAnimationParticleField) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1236,6 +1282,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                     case 4:
                         inheritAnimations = reader.ReadBool();
                         break;
+                    case 5:
+                        replicationBone = reader.ReadNullTerminatedString();
+                        break;
                     case 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
                         Debug.LogError($"0xFE marker found in Misc Data in {adrFilePath}");
@@ -1265,6 +1314,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                     case 1:
                         coversFacialHair = reader.ReadBool();
                         break;
+                    case 2:
+                        hatHairType = reader.ReadByte();
+                        break;
                     case 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
                         Debug.LogError($"0xFE marker found in Misc Data 2 in {adrFilePath}");
@@ -1291,6 +1343,15 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 var definitionSize = reader.ReadCompressedLength();
 
                 switch (definitionType) {
+                    case 1:
+                        equipType = reader.ReadByte();
+                        break;
+                    case 3:
+                        parentAttachSlot = reader.ReadNullTerminatedString();
+                        break;
+                    case 4:
+                        childAttachSlot = reader.ReadNullTerminatedString();
+                        break;
                     case 5:
                         equippedSlot = reader.ReadNullTerminatedString();
                         break;
@@ -1323,6 +1384,12 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 switch (definitionType) {
                     case 1:
                         entrance.boneName = reader.ReadNullTerminatedString();
+                        break;
+                    case 2:
+                        entrance.animName = reader.ReadNullTerminatedString();
+                        break;
+                    case 3:
+                        entrance.location = reader.ReadNullTerminatedString();
                         break;
                     case 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1358,6 +1425,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                     // entries
                     case 1:
                         seat.entrances.Add(ParseMountSeatEntrance(reader.ReadBytes(definitionSize), adrFilePath));
+                        break;
+                    case 4:
+                        seat.animName = reader.ReadNullTerminatedString();
                         break;
                     case 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1418,6 +1488,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             Name = 3,
             ToolName = 4,
             Id = 5,
+            LoadType = 7,
         }
         private CompositeAnimationEffect ParseCompositeAnimationEffect(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
@@ -1442,6 +1513,9 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         break;
                     case EnumCompositeAnimationEffectField.TriggerEvents:
                         effect.events.Add(ParseTriggerEvent(reader.ReadBytes(definitionSize), adrFilePath));
+                        break;
+                    case EnumCompositeAnimationEffectField.LoadType:
+                        effect.loadType = reader.ReadByte();
                         break;
                     case (EnumCompositeAnimationEffectField) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1661,13 +1735,16 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public float offsetZ;
             public string effectFileName;
             public string unknownBoneString;
+            public bool localSpace;
             public bool worldOrientation;
+            public bool hardStop;
         }
 
         [Serializable]
         public class MaterialMapping {
             public string name;
             public uint hash;
+            public uint anotherHash;
         }
 
         [Serializable]
@@ -1696,6 +1773,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         [Serializable]
         public class Effect {
+            public byte type;
             public string name;
             public string toolName;
             public ushort id;
@@ -1705,9 +1783,11 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         public class AnimationData {
             public string name;
             public string fileName;
+            public float playbackScale = 1.0f;
             // what happens when this doesnt match the actual file's duration?
             public float duration;
             public byte loadType;
+            public bool effectsPersist;
         }
 
         [Serializable]
@@ -1723,6 +1803,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string toolName;
             public ushort id;
             public bool playOnce;
+            public byte loadType;
             public readonly List<TriggerEvent> events = new();
         }
 
@@ -1738,6 +1819,8 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string toolName;
             public ushort id;
             public readonly List<TriggerEvent> events = new();
+            public bool playOnce;
+            public byte loadType;
         }
 
         [Serializable]
@@ -1767,6 +1850,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         [Serializable]
         public class MountSeat {
             public string boneName;
+            public string animName;
             // TODO: unsure if this is an array, treating it as one for now
             public readonly List<MountSeatEntrance> entrances = new();
         }
@@ -1774,6 +1858,8 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         [Serializable]
         public class MountSeatEntrance {
             public string boneName;
+            public string animName;
+            public string location;
         }
 
         [Serializable]
@@ -1783,6 +1869,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string toolName;
             public ushort id;
             public readonly List<TriggerEvent> events = new();
+            public byte loadType;
         }
 
         [Serializable]
