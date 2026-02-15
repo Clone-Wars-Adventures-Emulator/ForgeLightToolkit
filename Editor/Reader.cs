@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Buffers.Binary;
 
@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace ForgeLightToolkit.Editor
 {
+    // TODO: make this IDisposable and update all references to use `using` statements
     public class Reader
     {
         private readonly Stream _stream;
@@ -118,10 +119,25 @@ namespace ForgeLightToolkit.Editor
             }
             else
             {
-                uncompressedLength = BinaryPrimitives.ReverseEndianness(ReadInt32());
+                // this is actually endian aware data reading...
+                var beLength = _br.ReadBytes(4);
+                if (IsLittleEndian) {
+                    Array.Reverse(beLength);
+                }
+
+                uncompressedLength = BitConverter.ToInt32(beLength);
             }
 
             return uncompressedLength;
+        }
+
+        public float ReadAdrFloat() {
+            var beFloat = _br.ReadBytes(4);
+            if (IsLittleEndian) {
+                Array.Reverse(beFloat);
+            }
+
+            return BitConverter.ToSingle(beFloat);
         }
 
         public Color32 ReadColor32()
