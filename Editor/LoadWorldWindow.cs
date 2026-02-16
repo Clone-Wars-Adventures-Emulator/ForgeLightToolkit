@@ -523,12 +523,12 @@ namespace ForgeLightToolkit.Editor {
                 return;
             }
 
-            if (adrFile.ModelFileName is null) {
+            if (adrFile.modelFileName is null) {
                 Debug.LogError($"Adr has no model file name. {adrFilePath}");
                 return;
             }
 
-            var dmeFilePath = Path.Combine(assetsPath, adrFile.ModelFileName);
+            var dmeFilePath = Path.Combine(assetsPath, adrFile.modelFileName);
             var dmeFile = AssetDatabase.LoadAssetAtPath<DmeFile>(dmeFilePath);
             if (dmeFile == null) {
                 Debug.LogError($"Failed to load Dme. {dmeFilePath}");
