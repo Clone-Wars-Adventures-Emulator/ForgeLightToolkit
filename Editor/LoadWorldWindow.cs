@@ -2,6 +2,7 @@ using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 using ForgeLightToolkit.Runtime;
+using ForgeLightToolkit.Runtime.EditorDebug;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -362,15 +363,22 @@ namespace ForgeLightToolkit.Editor {
                         }
                     };
 
-                    var collisionGizmo = chunkObject.AddComponent<CollisionGizmo>();
-                    collisionGizmo.BvhCenters = gcnkFile.BvhCenters;
-                    collisionGizmo.BvhSizes = gcnkFile.BvhSizes;int max = gcnkFile.Depth.Max();
-                    for (var i = 0; i < gcnkFile.Depth.Count; i++) {
-                        var alpha = 1.0f;
-                        if (max > 0) {
-                            alpha = (float) gcnkFile.Depth[i] / max;
+                    if (fastMode) {
+                        // This should only be loaded when in editor and not saved as part of any scene or prefab
+                        var collisionGizmo = chunkObject.AddComponent<CollisionGizmo>();
+                        float maxDepth = gcnkFile.Depth.Max();
+                        for (var i = 0; i < gcnkFile.Depth.Count; i++) {
+                            var alpha = 1.0f;
+                            if (maxDepth > 0) {
+                                alpha = gcnkFile.Depth[i] / maxDepth;
+                            }
+                            var color = new Color(0f, 0f, 1f, alpha);
+                            collisionGizmo.bvhData.Add(new CollisionGizmo.BvhData() {
+                                center = gcnkFile.BvhCenters[i],
+                                size = gcnkFile.BvhSizes[i],
+                                color = color,
+                            });
                         }
-                        collisionGizmo.Colors.Add(new Color(0f, 0f, 1f, alpha));
                     }
 
                     if (!gzneFile.HideTerrain) {

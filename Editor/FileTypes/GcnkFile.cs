@@ -9,10 +9,8 @@ using Ionic.Zlib;
 
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 
-namespace ForgeLightToolkit.Editor.FileTypes
-{
-    public class GcnkFile : ScriptableObject
-    {
+namespace ForgeLightToolkit.Editor.FileTypes {
+    public class GcnkFile : ScriptableObject {
         public int Version;
 
         public Vector2Int Coords;
@@ -44,21 +42,22 @@ namespace ForgeLightToolkit.Editor.FileTypes
         [HideInInspector]
         public List<int> Depth = new();
 
-        public bool Load(string filePath)
-        {
+        public bool Load(string filePath) {
             name = Path.GetFileNameWithoutExtension(filePath);
 
             var reader = new Reader(File.OpenRead(filePath));
 
             var magic = new string(reader.ReadChars(4));
 
-            if (magic != "GCNK")
+            if (magic != "GCNK") {
                 return false;
+            }
 
             Version = reader.ReadInt32();
 
-            if (Version is < 0 or > 6)
+            if (Version is < 0 or > 6) {
                 return false;
+            }
 
             var chunkUncompressedLength = reader.ReadInt32();
             var chunkCompressedLength = reader.ReadInt32();
@@ -68,16 +67,19 @@ namespace ForgeLightToolkit.Editor.FileTypes
             var chunkDecompressedStream = new MemoryStream();
 
             using (var compressedStream = new MemoryStream(chunkCompressedData))
-            using (var zlibStream = new ZlibStream(compressedStream, CompressionMode.Decompress))
+            using (var zlibStream = new ZlibStream(compressedStream, CompressionMode.Decompress)) {
                 zlibStream.CopyTo(chunkDecompressedStream);
+            }
 
-            if (chunkDecompressedStream.Position != chunkUncompressedLength)
+            if (chunkDecompressedStream.Position != chunkUncompressedLength) {
                 return false;
+            }
 
             chunkDecompressedStream.Position = 0;
 
-            if (!LoadChunk(chunkDecompressedStream))
+            if (!LoadChunk(chunkDecompressedStream)) {
                 return false;
+            }
 
             var collisionUncompressedLength = reader.ReadInt32();
             var collisionCompressedLength = reader.ReadInt32();
@@ -87,45 +89,47 @@ namespace ForgeLightToolkit.Editor.FileTypes
             var collisionDecompressedStream = new MemoryStream();
 
             using (var compressedStream = new MemoryStream(collisionCompressedData))
-            using (var zlibStream = new ZlibStream(compressedStream, CompressionMode.Decompress))
+            using (var zlibStream = new ZlibStream(compressedStream, CompressionMode.Decompress)) {
                 zlibStream.CopyTo(collisionDecompressedStream);
+            }
 
-            if (collisionDecompressedStream.Position != collisionUncompressedLength)
+            if (collisionDecompressedStream.Position != collisionUncompressedLength) {
                 return false;
+            }
 
             collisionDecompressedStream.Position = 0;
 
-            if (!LoadCollision(collisionDecompressedStream))
+            if (!LoadCollision(collisionDecompressedStream)) {
                 return false;
+            }
 
-            if (!CreateChunkMesh())
+            if (!CreateChunkMesh()) {
                 return false;
+            }
 
             return true;
         }
 
-        private bool LoadChunk(Stream chunkStream)
-        {
+        private bool LoadChunk(Stream chunkStream) {
             var reader = new Reader(chunkStream);
 
             var tileCount = reader.ReadInt32();
 
-            for (var i = 0; i < tileCount; i++)
-            {
+            for (var i = 0; i < tileCount; i++) {
                 var tile = new Tile(Version);
 
                 tile.Deserialize(reader);
 
-                if (i == 0)
+                if (i == 0) {
                     Coords = tile.Coords;
+                }
 
                 Tiles.Add(tile);
             }
 
             var exportRenderBatchCount = reader.ReadInt32();
 
-            for (var i = 0; i < exportRenderBatchCount; i++)
-            {
+            for (var i = 0; i < exportRenderBatchCount; i++) {
                 var exportRenderBatch = new ExportRenderBatch();
 
                 exportRenderBatch.Deserialize(reader);
@@ -135,67 +139,51 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             var detailMaskCount = reader.ReadInt32();
 
-            if (detailMaskCount > 0)
-            {
-                if (Version < 4)
-                {
+            if (detailMaskCount > 0) {
+                if (Version < 4) {
                     throw new NotImplementedException();
-                }
-                else
-                {
+                } else {
                     var detailMaskSize = reader.ReadInt32();
 
-                    if (detailMaskCount == 1)
-                    {
+                    if (detailMaskCount == 1) {
                         var data = new byte[detailMaskSize * detailMaskSize * 2 / 2];
 
-                        for (var i = 0; i < data.Length; i += 2)
-                        {
+                        for (var i = 0; i < data.Length; i += 2) {
                             var pixel = reader.ReadByte();
 
                             data[i] = (byte)((pixel >> 4) * 16);
                             data[i + 1] = (byte)((pixel & 15) * 16);
                         }
 
-                        DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.R8, false)
-                        {
+                        DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.R8, false) {
                             name = name
                         };
 
                         DetailMask.LoadRawTextureData(data);
                         DetailMask.Apply();
-                    }
-                    else if (detailMaskCount == 2)
-                    {
+                    } else if (detailMaskCount == 2) {
                         var data = new byte[detailMaskSize * detailMaskSize * 4 / 2];
 
-                        for (var i = 0; i < data.Length; i += 2)
-                        {
+                        for (var i = 0; i < data.Length; i += 2) {
                             data[i + 1] = reader.ReadByte();
                         }
 
-                        DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.ARGB4444, false)
-                        {
+                        DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.ARGB4444, false) {
                             name = name
                         };
 
                         DetailMask.LoadRawTextureData(data);
                         DetailMask.Apply();
-                    }
-                    else if (detailMaskCount == 4)
-                    {
+                    } else if (detailMaskCount == 4) {
                         var data = reader.ReadBytes(detailMaskSize * detailMaskSize * 4 / 2);
 
-                        DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.ARGB4444, false)
-                        {
+                        DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.ARGB4444, false) {
                             name = name
                         };
 
                         DetailMask.LoadRawTextureData(data);
                         DetailMask.Apply();
-                    }
-                    else
-                    {
+                    } else {
                         reader.Skip(detailMaskSize * detailMaskSize * detailMaskCount / 2);
 
                         Debug.Log($"Unknown Detail Mask Count: {detailMaskCount} File: {name}");
@@ -207,11 +195,11 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             IndexBuffer = new ushort[indexBufferCount];
 
-            for (int i = 0; i < IndexBuffer.Length; i++)
+            for (int i = 0; i < IndexBuffer.Length; i++) {
                 IndexBuffer[i] = reader.ReadUInt16();
+            }
 
-            if (!reader.IsLittleEndian)
-            {
+            if (!reader.IsLittleEndian) {
                 var unknown = reader.ReadInt32();
 
                 reader.Skip(unknown);
@@ -221,8 +209,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             VertexBuffer = new Vertex[vertexBufferCount];
 
-            for (var i = 0; i < VertexBuffer.Length; i++)
-            {
+            for (var i = 0; i < VertexBuffer.Length; i++) {
                 var vertexBuffer = new Vertex();
 
                 vertexBuffer.Deserialize(reader);
@@ -233,12 +220,10 @@ namespace ForgeLightToolkit.Editor.FileTypes
             return true;
         }
 
-        private bool LoadCollision(Stream collisionStream)
-        {
+        private bool LoadCollision(Stream collisionStream) {
             var reader = new Reader(collisionStream);
 
-            while (!reader.ReachedEnd && reader.ReadInt32() > 0)
-            {
+            while (!reader.ReachedEnd && reader.ReadInt32() > 0) {
                 reader.Skip(28);
                 var aabbMin = reader.ReadVector4();
                 var aabbMax = reader.ReadVector4();
@@ -255,13 +240,11 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
                 int?[] escapeIndices = new int?[nodeCount];
 
-                for (var i = 0; i < nodeCount; i++)
-                {
+                for (var i = 0; i < nodeCount; i++) {
                     Vector3 size;
                     Vector3 center;
                     int? escapeIndex = null;
-                    if (useQuantization)
-                    {
+                    if (useQuantization) {
                         var aabbMinX = reader.ReadUInt16();
                         var aabbMinY = reader.ReadUInt16();
                         var aabbMinZ = reader.ReadUInt16();
@@ -269,24 +252,21 @@ namespace ForgeLightToolkit.Editor.FileTypes
                         var aabbMaxY = reader.ReadUInt16();
                         var aabbMaxZ = reader.ReadUInt16();
                         var escapeOrTriangleIndex = reader.ReadInt32();
-                        if (escapeOrTriangleIndex < 0)
-                        {
+                        if (escapeOrTriangleIndex < 0) {
                             escapeIndex = -escapeOrTriangleIndex;
                         }
-                
+
                         size = new Vector3(
-                            (float) (aabbMaxX - aabbMinX) / quantization.x,
-                            (float) (aabbMaxY - aabbMinY) / quantization.y,
-                            (float) (aabbMaxZ - aabbMinZ) / quantization.z
+                            (float)(aabbMaxX - aabbMinX) / quantization.x,
+                            (float)(aabbMaxY - aabbMinY) / quantization.y,
+                            (float)(aabbMaxZ - aabbMinZ) / quantization.z
                         );
                         center = new Vector3(
-                            (float) aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,
-                            (float) aabbMinY / quantization.y + size.y / 2.0f + aabbMin.y,
-                            (float) aabbMinZ / quantization.z + size.z / 2.0f + aabbMin.z
+                            (float)aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,
+                            (float)aabbMinY / quantization.y + size.y / 2.0f + aabbMin.y,
+                            (float)aabbMinZ / quantization.z + size.z / 2.0f + aabbMin.z
                         );
-                    }
-                    else
-                    {
+                    } else {
                         var aabbMinNode = reader.ReadVector4();
                         var aabbMaxNode = reader.ReadVector4();
                         escapeIndex = reader.ReadInt32();
@@ -319,29 +299,24 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
                 int[] depth = new int[nodeCount];
                 Array.Fill(depth, int.MaxValue);
-                if (nodeCount > 0)
-                {
+                if (nodeCount > 0) {
                     depth[0] = 0;
-                    for (var i = 0; i < nodeCount; i++)
-                    {
+                    for (var i = 0; i < nodeCount; i++) {
                         // Left child
-                        if (i + 1 < nodeCount)
-                        {
+                        if (i + 1 < nodeCount) {
                             depth[i + 1] = Math.Min(depth[i + 1], depth[i] + 1);
                         }
 
                         // Right child
                         var escapeIndex = escapeIndices[i];
-                        if (escapeIndex != null && escapeIndex < nodeCount)
-                        {
-                            depth[(int) escapeIndex] = Math.Min(depth[(int) escapeIndex], depth[i] + 1);
+                        if (escapeIndex != null && escapeIndex < nodeCount) {
+                            depth[(int)escapeIndex] = Math.Min(depth[(int)escapeIndex], depth[i] + 1);
                         }
                     }
                 }
                 Depth.AddRange(depth);
 
-                for (var i = 0; i < subtreeHeaderCount; i++)
-                {
+                for (var i = 0; i < subtreeHeaderCount; i++) {
                     reader.Skip(32);
                 }
             }
@@ -349,10 +324,8 @@ namespace ForgeLightToolkit.Editor.FileTypes
             return true;
         }
 
-        private bool CreateChunkMesh()
-        {
-            Mesh = new Mesh
-            {
+        private bool CreateChunkMesh() {
+            Mesh = new Mesh {
                 name = name
             };
 
@@ -377,8 +350,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             Mesh.subMeshCount = ExportRenderBatches.Count;
 
-            for (var i = 0; i < ExportRenderBatches.Count; i++)
-            {
+            for (var i = 0; i < ExportRenderBatches.Count; i++) {
                 var exportRenderBatch = ExportRenderBatches[i];
 
                 var indices = IndexBuffer.Skip(exportRenderBatch.IndexOffset).Take(exportRenderBatch.IndexCount).ToArray();
