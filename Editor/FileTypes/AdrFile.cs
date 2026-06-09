@@ -68,17 +68,17 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         public MountData mountData;
 
-        public readonly List<ParticleEmitterDefinition> particleEmitterDefinitions = new();
-        public readonly List<MaterialMapping> materialMappings = new();
-        public readonly List<TextureAlias> textureAliases = new();
-        public readonly List<TintAlias> tintAliases = new();
-        public readonly List<Effect> effects = new();
-        public readonly List<AnimationData> animations = new();
-        public readonly List<AnimationSounds> animationSounds = new();
-        public readonly List<AnimationParticles> animationParticles = new();
-        public readonly List<AnimationActionPoints> animationActionPoints = new();
-        public readonly List<CompositeAnimationEffects> compositeEffects = new();
-        public readonly List<LookControl> lookControls = new();
+        public List<ParticleEmitterDefinition> particleEmitterDefinitions = new();
+        public List<MaterialMapping> materialMappings = new();
+        public List<TextureAlias> textureAliases = new();
+        public List<TintAlias> tintAliases = new();
+        public List<Effect> effects = new();
+        public List<AnimationData> animations = new();
+        public List<AnimationSounds> animationSounds = new();
+        public List<AnimationParticles> animationParticles = new();
+        public List<AnimationActionPoints> animationActionPoints = new();
+        public List<CompositeAnimationEffects> compositeEffects = new();
+        public List<LookControl> lookControls = new();
 
         public bool Load(string filePath) {
             name = Path.GetFileNameWithoutExtension(filePath);
