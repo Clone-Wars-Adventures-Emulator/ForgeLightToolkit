@@ -68,6 +68,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         public MountData mountData;
 
+        // technically this is actually emitter definition, but in cwa, they only do particles here and not sounds
         public List<ParticleEmitterDefinition> particleEmitterDefinitions = new();
         public List<MaterialMapping> materialMappings = new();
         public List<TextureAlias> textureAliases = new();
@@ -841,6 +842,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         sound.effectType = reader.ReadByte();
                         break;
                     case EnumAnimationSoundField.Id:
+                        // TODO: this id is technically a 4 byte field, but CWA only uses 2 of the 4
                         sound.id = reader.ReadUInt16();
                         break;
                     case EnumAnimationSoundField.PlayOnce:
@@ -961,6 +963,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         particle.toolName = reader.ReadNullTerminatedString();
                         break;
                     case EnumAnimationParticleField.Id:
+                        // TODO: this id is technically a 4 byte field, but CWA only uses 2 of the 4
                         particle.id = reader.ReadUInt16();
                         break;
                     case EnumAnimationParticleField.TriggerEvents:
@@ -1226,6 +1229,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 var definitionType = reader.ReadByte();
                 var definitionSize = reader.ReadCompressedLength();
 
+                // TODO: this is incomplete, there is also supposed to be a 0x04, but CWA does not use it
                 switch (definitionType) {
                     case 2:
                         // TODO: blow up if this doesnt meet expectations
@@ -1509,6 +1513,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         effect.effectType = reader.ReadByte();
                         break;
                     case EnumCompositeAnimationEffectField.Id:
+                        // TODO: this id is technically a 4 byte field, but CWA only uses 2 of the 4
                         effect.id = reader.ReadUInt16();
                         break;
                     case EnumCompositeAnimationEffectField.TriggerEvents:
@@ -1804,13 +1809,13 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public ushort id;
             public bool playOnce;
             public byte loadType;
-            public readonly List<TriggerEvent> events = new();
+            public List<TriggerEvent> events = new();
         }
 
         [Serializable]
         public class AnimationSounds {
             public string animationName;
-            public readonly List<AnimationSoundEntry> sounds = new();
+            public List<AnimationSoundEntry> sounds = new();
         }
 
         [Serializable]
@@ -1818,7 +1823,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string name;
             public string toolName;
             public ushort id;
-            public readonly List<TriggerEvent> events = new();
+            public List<TriggerEvent> events = new();
             public bool playOnce;
             public byte loadType;
         }
@@ -1826,7 +1831,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         [Serializable]
         public class AnimationParticles {
             public string particleName;
-            public readonly List<AnimationParticleEntry> sounds = new();
+            public List<AnimationParticleEntry> sounds = new();
         }
 
         [Serializable]
@@ -1838,13 +1843,13 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         [Serializable]
         public class AnimationActionPoints {
             public string animationName;
-            public readonly List<AnimationActionPoint> actionPoints = new();
+            public List<AnimationActionPoint> actionPoints = new();
         }
 
         [Serializable]
         public class MountData {
             public string runToIdleAnim;
-            public readonly List<MountSeat> seats = new();
+            public List<MountSeat> seats = new();
         }
 
         [Serializable]
@@ -1852,7 +1857,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string boneName;
             public string animName;
             // TODO: unsure if this is an array, treating it as one for now
-            public readonly List<MountSeatEntrance> entrances = new();
+            public List<MountSeatEntrance> entrances = new();
         }
 
         [Serializable]
@@ -1868,14 +1873,14 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string name;
             public string toolName;
             public ushort id;
-            public readonly List<TriggerEvent> events = new();
+            public List<TriggerEvent> events = new();
             public byte loadType;
         }
 
         [Serializable]
         public class CompositeAnimationEffects {
             public string animationName;
-            public readonly List<CompositeAnimationEffect> effects = new();
+            public List<CompositeAnimationEffect> effects = new();
         }
 
         [Serializable]
@@ -1891,7 +1896,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         public class LookControl {
             public string name;
             public byte type;
-            public readonly List<Joint> joints = new();
+            public List<Joint> joints = new();
             public string effectorBone;
         }
         #endregion

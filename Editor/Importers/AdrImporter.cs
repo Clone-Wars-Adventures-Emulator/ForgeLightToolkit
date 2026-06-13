@@ -3,15 +3,11 @@ using UnityEditor.AssetImporters;
 
 using ForgeLightToolkit.Editor.FileTypes;
 
-namespace ForgeLightToolkit.Editor.Importers
-{
+namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "adr")]
-    public class AdrImporter : ScriptedImporter
-    {
-        public override void OnImportAsset(AssetImportContext ctx)
-        {
-            if (string.IsNullOrEmpty(ctx.assetPath))
-            {
+    public class AdrImporter : ScriptedImporter {
+        public override void OnImportAsset(AssetImportContext ctx) {
+            if (string.IsNullOrEmpty(ctx.assetPath)) {
                 ctx.LogImportError($"Invalid asset path. ({ctx.assetPath})");
                 return;
             }
@@ -22,8 +18,7 @@ namespace ForgeLightToolkit.Editor.Importers
             ctx.AddObjectToAsset("Adr", adrFile);
             ctx.SetMainObject(adrFile);
 
-            if (!adrFile.Load(ctx.assetPath))
-            {
+            if (!adrFile.Load(ctx.assetPath)) {
                 ctx.LogImportError($"Failed to load adr file. ({ctx.assetPath})");
                 return;
             }

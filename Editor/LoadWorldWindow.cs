@@ -496,9 +496,6 @@ namespace ForgeLightToolkit.Editor {
 
         // ReSharper disable Unity.PerformanceAnalysis
         private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, int runtimeId = 0) {
-            var adrFilePath = Path.Combine(assetsPath, adrFileName);
-            var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
-
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
             if (existingPrefab != null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
@@ -517,6 +514,9 @@ namespace ForgeLightToolkit.Editor {
 
                 return;
             }
+
+            var adrFilePath = Path.Combine(assetsPath, adrFileName);
+            var adrFile = AssetDatabase.LoadAssetAtPath<AdrFile>(adrFilePath);
 
             if (adrFile == null) {
                 Debug.LogError($"Failed to load Adr. {adrFilePath}");
@@ -656,6 +656,9 @@ namespace ForgeLightToolkit.Editor {
 
                 objectMeshRenderer.material = objectMaterial;
             }
+
+            // Apply the extensions to the adr instance
+            IAdrExtender.ApplyExtenstionsToPrefab(runtimeObject, adrFile);
 
             objectsAlreadyProcessed.Add(runtimeObject.name);
             if (!fastMode) {

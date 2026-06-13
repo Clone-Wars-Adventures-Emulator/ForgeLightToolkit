@@ -3,15 +3,11 @@ using UnityEditor.AssetImporters;
 
 using ForgeLightToolkit.Editor.FileTypes;
 
-namespace ForgeLightToolkit.Editor.Importers
-{
+namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "dme")]
-    public class DmeImporter : ScriptedImporter
-    {
-        public override void OnImportAsset(AssetImportContext ctx)
-        {
-            if (string.IsNullOrEmpty(ctx.assetPath))
-            {
+    public class DmeImporter : ScriptedImporter {
+        public override void OnImportAsset(AssetImportContext ctx) {
+            if (string.IsNullOrEmpty(ctx.assetPath)) {
                 ctx.LogImportError($"Invalid asset path. ({ctx.assetPath})");
                 return;
             }
@@ -29,8 +25,9 @@ namespace ForgeLightToolkit.Editor.Importers
 
             ctx.AddObjectToAsset("Dma", dmeFile.DmaFile);
 
-            foreach (var meshEntry in dmeFile.Meshes)
+            foreach (var meshEntry in dmeFile.Meshes){
                 ctx.AddObjectToAsset(meshEntry.Mesh.name, meshEntry.Mesh);
+            }
         }
     }
 }
