@@ -726,7 +726,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         anim.duration = reader.ReadAdrFloat();
                         break;
                     case EnumAnimationDataField.LoadType:
-                        anim.loadType = reader.ReadByte();
+                        anim.loadType = (EnumLoadType) reader.ReadByte();
                         break;
                     case EnumAnimationDataField.EffectsPersist:
                         anim.effectsPersist = reader.ReadBool();
@@ -849,7 +849,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         sound.playOnce = reader.ReadBool();
                         break;
                     case EnumAnimationSoundField.LoadType:
-                        sound.loadType = reader.ReadByte();
+                        sound.loadType = (EnumLoadType) reader.ReadByte();
                         break;
                     case EnumAnimationSoundField.TriggerEvents:
                         sound.events.Add(ParseTriggerEvent(reader.ReadBytes(definitionSize), adrFilePath));
@@ -973,7 +973,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         particle.playOnce = reader.ReadBool();
                         break;
                     case EnumAnimationParticleField.LoadType:
-                        particle.loadType = reader.ReadByte();
+                        particle.loadType = (EnumLoadType) reader.ReadByte();
                         break;
                     case (EnumAnimationParticleField) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1004,11 +1004,11 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 switch (definitionType) {
                     // name
                     case 2:
-                        particles.particleName = reader.ReadNullTerminatedString();
+                        particles.animationName = reader.ReadNullTerminatedString();
                         break;
                     // entries
                     case 1:
-                        particles.sounds.Add(ParseAnimationParticle(reader.ReadBytes(definitionSize), adrFilePath));
+                        particles.particles.Add(ParseAnimationParticle(reader.ReadBytes(definitionSize), adrFilePath));
                         break;
                     case 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1520,7 +1520,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         effect.events.Add(ParseTriggerEvent(reader.ReadBytes(definitionSize), adrFilePath));
                         break;
                     case EnumCompositeAnimationEffectField.LoadType:
-                        effect.loadType = reader.ReadByte();
+                        effect.loadType = (EnumLoadType) reader.ReadByte();
                         break;
                     case (EnumCompositeAnimationEffectField) 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
@@ -1727,6 +1727,14 @@ namespace ForgeLightToolkit.Editor.FileTypes {
         #endregion
 
         #region Data Structures
+        public enum EnumLoadType : byte {
+            Requred = 0,
+            Preload = 1,
+            OnDemand = 2,
+            InheritFromParent = 3,
+            RequiredFire = 4,
+        }
+
         [Serializable]
         public class ParticleEmitterDefinition {
             public int id;
@@ -1791,7 +1799,8 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public float playbackScale = 1.0f;
             // what happens when this doesnt match the actual file's duration?
             public float duration;
-            public byte loadType;
+            // Emu doesnt care
+            public EnumLoadType loadType;
             public bool effectsPersist;
         }
 
@@ -1803,17 +1812,23 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         [Serializable]
         public class AnimationSoundEntry {
+            // always 1, from when this and composite particles used to be in one array
             public byte effectType;
+            // Emu doesnt care
             public string name;
+            // Emu doesnt care
             public string toolName;
+            // == EnumSound in Emu
             public ushort id;
             public bool playOnce;
-            public byte loadType;
+            // Emu doesnt care
+            public EnumLoadType loadType;
             public List<TriggerEvent> events = new();
         }
 
         [Serializable]
         public class AnimationSounds {
+            // The name of the animation that these effects apply to
             public string animationName;
             public List<AnimationSoundEntry> sounds = new();
         }
@@ -1823,15 +1838,17 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             public string name;
             public string toolName;
             public ushort id;
-            public List<TriggerEvent> events = new();
             public bool playOnce;
-            public byte loadType;
+            // Emu doesnt care
+            public EnumLoadType loadType;
+            public List<TriggerEvent> events = new();
         }
 
         [Serializable]
         public class AnimationParticles {
-            public string particleName;
-            public List<AnimationParticleEntry> sounds = new();
+            // The name of the animation that these effects apply to
+            public string animationName;
+            public List<AnimationParticleEntry> particles = new();
         }
 
         [Serializable]
@@ -1842,6 +1859,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         [Serializable]
         public class AnimationActionPoints {
+            // The name of the animation that these effects apply to
             public string animationName;
             public List<AnimationActionPoint> actionPoints = new();
         }
@@ -1869,16 +1887,19 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         [Serializable]
         public class CompositeAnimationEffect {
+            // always 2, from when this and sounds used to be in one array
             public byte effectType;
             public string name;
             public string toolName;
             public ushort id;
+            // Emu doesnt care
+            public EnumLoadType loadType;
             public List<TriggerEvent> events = new();
-            public byte loadType;
         }
 
         [Serializable]
         public class CompositeAnimationEffects {
+            // The name of the animation that these effects apply to
             public string animationName;
             public List<CompositeAnimationEffect> effects = new();
         }
