@@ -46,6 +46,8 @@ namespace ForgeLightToolkit.Editor {
         [SerializeField]
         private bool fastMode;
         [SerializeField]
+        private bool visualizeBvh;
+        [SerializeField]
         private bool overrideTerrainMaterials;
         [SerializeField]
         private bool overrideWorldPrefabsAndMats;
@@ -195,11 +197,25 @@ namespace ForgeLightToolkit.Editor {
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
 
+            var fastProp = SObject.FindProperty("fastMode");
+            bool wasFast = fastProp.boolValue;
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalTabbedSpace);
-            SObject.FindProperty("fastMode").boolValue = GUILayout.Toggle(fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
+            fastProp.boolValue = GUILayout.Toggle(fastMode, new GUIContent("Fast Mode", "Loads directly from all original pack assets and skips saving any materials or prefabs"));
             GUILayout.Space(HorizontalSpace);
             GUILayout.EndHorizontal();
+
+            var vizProp = SObject.FindProperty("visualizeBvh");
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(HorizontalTabbedSpace);
+            vizProp.boolValue = GUILayout.Toggle(visualizeBvh, new GUIContent("Visualize BVH", "Visualize the Bounding Volume Hierarchy of the world to be loaded. Only works in fast mode."));
+            GUILayout.Space(HorizontalSpace);
+            GUILayout.EndHorizontal();
+
+            // if fast mod was enabled but is now off, turn off BVH Visualizing
+            if (wasFast && !fastProp.boolValue) {
+                vizProp.boolValue = false;
+            }
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(HorizontalTabbedSpace);
@@ -363,7 +379,7 @@ namespace ForgeLightToolkit.Editor {
                         }
                     };
 
-                    if (fastMode) {
+                    if (fastMode && visualizeBvh) {
                         // This should only be loaded when in editor and not saved as part of any scene or prefab
                         var collisionGizmo = chunkObject.AddComponent<CollisionGizmo>();
                         float maxDepth = gcnkFile.Depth.Max();
