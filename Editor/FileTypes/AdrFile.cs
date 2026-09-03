@@ -99,7 +99,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         ParseModelDefinition(definitionData, filePath);
                         break;
                     case EnumPrimaryDataType.ParticleEmitterArray:
-                        ParseParticleEmitterDataArray(definitionData, filePath);
+                        ParseEffects(definitionData, filePath);
                         break;
                     case EnumPrimaryDataType.MaterialMappings:
                         ParseMaterialMappingArray(definitionData, filePath);
@@ -271,8 +271,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
                 switch (definitionType) {
                     case EnumParticleDataFieldType.EffectId:
-                        // TODO: this type
-                        defn.id = reader.ReadInt32();
+                        defn.id = reader.ReadUInt16();
                         break;
                     case EnumParticleDataFieldType.EmitterName:
                         defn.name = reader.ReadNullTerminatedString();
@@ -331,7 +330,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
             return defn;
         }
 
-        private void ParseParticleEmitterDataArray(byte[] data, string adrFilePath) {
+        private void ParseParticleEffectArray(byte[] data, string adrFilePath) {
             var reader = new Reader(data);
 
             while (!reader.ReachedEnd) {
@@ -339,9 +338,39 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                 var definitionSize = reader.ReadCompressedLength();
 
                 switch (definitionType) {
-                    case 2:
+                    // entry
+                    case 1:
                         var defn = ParseParticleEmitterData(reader.ReadBytes(definitionSize), adrFilePath);
                         particleEmitterDefinitions.Add(defn);
+                        break;
+                    case 0xFE:
+#if DEBUG_ALL_FE_INSTANCES
+                        Debug.LogError($"0xFE marker found in Particle Emitter array in {adrFilePath}");
+#endif
+                        reader.Skip(definitionSize);
+                        break;
+                    default:
+#if DEBUG_ADR_PARSING
+                        Debug.LogError($"Unhandled type 0x{definitionType:X} for ParticleEmitter data array: {adrFilePath}");
+#endif
+                        reader.Skip(definitionSize);
+                        break;
+                }
+            }
+        }
+
+        private void ParseEffects(byte[] data, string adrFilePath) {
+            var reader = new Reader(data);
+
+            while (!reader.ReachedEnd) {
+                var definitionType = reader.ReadByte();
+                var definitionSize = reader.ReadCompressedLength();
+
+                switch (definitionType) {
+                    // 1 would be for sounds, but CWA doesnt use that
+                    // particle effect
+                    case 2:
+                        ParseParticleEffectArray(reader.ReadBytes(definitionSize), adrFilePath);
                         break;
                     case 0xFE:
 #if DEBUG_ALL_FE_INSTANCES
