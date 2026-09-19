@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -69,8 +69,9 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
                 {
                     var unknown = reader.ReadInt32();
 
-                    if(unknown > 0)
+                    if(unknown > 0) {
                         reader.Skip(12 * unknown);
+                    }
                 }
             }
 

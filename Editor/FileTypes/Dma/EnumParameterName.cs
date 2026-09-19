@@ -1,17 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-
-using UnityEngine;
-
-namespace ForgeLightToolkit.Editor.FileTypes.Dma
-{
-    public enum ParameterName : uint
-    {
+namespace ForgeLightToolkit.Editor.FileTypes.Dma {
+    public enum EnumParameterName : uint {
         Diffuse = 3452395312,                   // D3DXPC_OBJECT - D3DXPT_TEXTURE
         ScrollV = 3936513778,                   // D3DXPC_SCALAR - D3DXPT_FLOAT
         ScrollU = 3145928884,                   // D3DXPC_SCALAR - D3DXPT_FLOAT
         Glow = 3649488835,                      // D3DXPC_SCALAR - D3DXPT_FLOAT
-        TintSemantic = 3414268513,              // D3DXPC_VECTOR - D3DXPT_FLOAT
+        Tint = 3414268513,                      // D3DXPC_VECTOR - D3DXPT_FLOAT
         FadeStencil = 593879656,                // D3DXPC_SCALAR - D3DXPT_INT
         DoubleSidedDefaultFalse = 2639744342,   // D3DXPC_SCALAR - D3DXPT_BOOL
         RimLighting = 549780338,                // D3DXPC_SCALAR - D3DXPT_FLOAT

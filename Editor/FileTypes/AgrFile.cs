@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System.IO;
 using System.Xml.Serialization;
@@ -21,8 +21,9 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             var actorSet = serializer.Deserialize(fileStream) as ActorSet;
 
-            if(actorSet is null)
+            if(actorSet is null) {
                 return false;
+            }
 
             ActorSet = actorSet;
 

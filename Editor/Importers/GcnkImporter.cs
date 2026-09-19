@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor.AssetImporters;
 
 using ForgeLightToolkit.Editor.FileTypes;
@@ -29,8 +29,9 @@ namespace ForgeLightToolkit.Editor.Importers
 
             ctx.AddObjectToAsset("Mesh", gcnkFile.Mesh);
 
-            if(gcnkFile.DetailMask is not null)
+            if(gcnkFile.DetailMask is not null) {
                 ctx.AddObjectToAsset("DetailMask", gcnkFile.DetailMask);
+            }
         }
     }
 }

@@ -28,6 +28,15 @@ namespace ForgeLightToolkit.Editor.Importers {
             foreach (var meshEntry in dmeFile.Meshes){
                 ctx.AddObjectToAsset(meshEntry.Mesh.name, meshEntry.Mesh);
             }
+
+            var materials = dmeFile.DmaFile.CreateMaterialsFrom(dmeFile.name);
+            foreach (var mat in materials) {
+                // on the off chance that one of the shaders was not found, we need to make sure we dont add a null asset to the CTX
+                if (mat == null) {
+                    continue;
+                }
+                ctx.AddObjectToAsset(mat.name, mat);
+            }
         }
     }
 }
