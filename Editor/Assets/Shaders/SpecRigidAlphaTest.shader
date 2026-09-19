@@ -1,10 +1,10 @@
-Shader "Custom/SpecRigidAlphaTest"
+Shader "FLTK/Built-In/SpecRigidAlphaTest"
 {
     Properties
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _SpecularMap("SpecularMap", 2D) = "white" {}
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _DoubleSided("DoubleSided", Integer) = 0
     }
     SubShader

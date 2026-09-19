@@ -10,7 +10,7 @@ namespace ForgeLightToolkit.Editor {
         private static readonly List<IAdrExtender> extenders = new();
 
         [InitializeOnLoadMethod]
-        public static void InitExtenders() {
+        private static void InitExtenders() {
             extenders.Clear();
             var iaet = typeof(IAdrExtender);
 

@@ -1,4 +1,4 @@
-Shader "Custom/EnvSkin"
+Shader "FLTK/Built-In/EnvSkin"
 {
     Properties
     {
@@ -8,7 +8,7 @@ Shader "Custom/EnvSkin"
         _Reflection("Reflection", Float) = 0.0
         _Bias("Bias", Integer) = 0
         _RimLighting("RimLighting", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _FadeStencil("FadeStencil", Integer) = 0
     }
     SubShader
@@ -23,7 +23,7 @@ Shader "Custom/EnvSkin"
         #pragma surface surf Standard fullforwardshadows addshadow
 
         sampler2D _Diffuse;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {

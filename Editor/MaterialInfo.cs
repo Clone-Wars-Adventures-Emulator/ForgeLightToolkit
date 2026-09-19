@@ -6,6 +6,7 @@ using System.Text;
 
 namespace ForgeLightToolkit.Editor {
     [XmlRoot("MaterialInfo")]
+    [Serializable]
     public class MaterialInfo {
         private MaterialInfo() {
         }
@@ -890,7 +891,7 @@ namespace ForgeLightToolkit.Editor {
         private static Lazy<MaterialInfo> _instance = new(CreateMaterialInfo);
         private static MaterialInfo CreateMaterialInfo() {
             // When the AssetDatabase is actively editing (such as on project first load), assets imported during that editing phase wont be available
-            // to AssetDatabase.LoadAsset* calls. The old logic here that would load the materials_3.xml file using the ADB would fail on FLTK package
+            // to AssetDatabase.LoadAsset* calls. The old logic here that would load the materials_3.xml file using the AssetDB would fail on FLTK package
             // installation or on Clone then Open of an existing project that had the package installed. Just putting the string in the class, while
             // a bit less kind on the eyes, is more functionally stable, and given we wont ever need to edit the materials, it works perfectly fine
             using var fileStream = new MemoryStream(Encoding.UTF8.GetBytes(MaterialFileContents));
@@ -904,6 +905,7 @@ namespace ForgeLightToolkit.Editor {
         [XmlElement("InputLayout")]
         public List<InputLayout> InputLayouts { get; set; } = null!;
 
+        [Serializable]
         public class InputLayout {
             private string _name = null!;
 
@@ -922,6 +924,7 @@ namespace ForgeLightToolkit.Editor {
             [XmlElement("Entry")]
             public List<Entry> Entries { get; set; } = null!;
 
+            [Serializable]
             public class Entry {
                 [XmlAttribute]
                 public int Stream { get; set; }
@@ -978,6 +981,7 @@ namespace ForgeLightToolkit.Editor {
         [XmlElement("ParameterGroup")]
         public List<ParameterGroup> ParameterGroups { get; set; } = null!;
 
+        [Serializable]
         public class ParameterGroup {
             private string _name = null!;
 
@@ -996,6 +1000,7 @@ namespace ForgeLightToolkit.Editor {
             [XmlElement("Parameter")]
             public List<Parameter> Parameters { get; set; } = null!;
 
+            [Serializable]
             public class Parameter {
                 private string _name = null!;
 
@@ -1058,6 +1063,7 @@ namespace ForgeLightToolkit.Editor {
         [XmlElement("MaterialDefinition")]
         public List<MaterialDefinition> MaterialDefinitions { get; set; } = null!;
 
+        [Serializable]
         public class MaterialDefinition {
             private string _name = null!;
 
@@ -1079,6 +1085,7 @@ namespace ForgeLightToolkit.Editor {
             [XmlElement("DrawStyle")]
             public List<DrawStyle> DrawStyles { get; set; } = null!;
 
+            [Serializable]
             public class DrawStyle {
                 [XmlAttribute]
                 public string Name { get; set; } = null!;
@@ -1115,6 +1122,7 @@ namespace ForgeLightToolkit.Editor {
             [XmlElement("Property")]
             public List<Property> Properties { get; set; } = null!;
 
+            [Serializable]
             public class Property {
                 private string _name = null!;
 

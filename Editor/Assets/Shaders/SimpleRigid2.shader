@@ -1,4 +1,4 @@
-Shader "Custom/SimpleRigid2"
+Shader "FLTK/Built-In/SimpleRigid2"
 {
     Properties
     {

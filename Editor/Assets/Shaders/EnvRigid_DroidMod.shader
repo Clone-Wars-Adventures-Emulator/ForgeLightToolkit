@@ -1,4 +1,4 @@
-Shader "Custom/EnvRigid_DroidTest"
+Shader "FLTK/Built-In/EnvRigid_DroidTest"
 {
     Properties
     {

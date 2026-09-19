@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static ForgeLightToolkit.Editor.MaterialInfo;
 
 namespace ForgeLightToolkit.Editor {
     public class LoadWorldWindow : EditorWindow {
@@ -551,6 +552,13 @@ namespace ForgeLightToolkit.Editor {
                 return;
             }
 
+            var dmaFilePath = Path.Combine(assetsPath, adrFile.materialFileName);
+            var dmaFile = AssetDatabase.LoadAssetAtPath<DmaFile>(dmaFilePath);
+            if (dmaFile == null) {
+                Debug.LogError($"Dma specified by {adrFile.name} ({adrFile.materialFileName}) does not exist, will use embedded DMA file materials");
+                dmaFile = dmeFile.DmaFile;
+            }
+
             var runtimeObject = new GameObject(adrFileName.Split(".")[0]) {
                 transform = {
                     parent = parentObject == null ? null : parentObject.transform,
@@ -569,7 +577,7 @@ namespace ForgeLightToolkit.Editor {
             }
 
             foreach (var meshEntry in dmeFile.Meshes) {
-                var meshObject = new GameObject() {
+                var meshObject = new GameObject(meshEntry.Mesh.name) {
                     transform = {
                         parent = runtimeObject.transform,
                         localPosition = Vector3.zero,
@@ -581,96 +589,13 @@ namespace ForgeLightToolkit.Editor {
                 var objectMeshFilter = meshObject.AddComponent<MeshFilter>();
                 objectMeshFilter.sharedMesh = meshEntry.Mesh;
                 var objectMeshRenderer = meshObject.AddComponent<MeshRenderer>();
-                var materialEntry = dmeFile.DmaFile.MaterialEntries[meshEntry.MaterialIndex];
-                var materialDefinition = MaterialInfo.Instance.MaterialDefinitions.FirstOrDefault(x => x.NameHash == materialEntry.Hash);
-                if (materialDefinition is null) {
-                    continue;
-                }
 
-                if (materialDefinition.Name.Contains("NoShadow")) {
+                if (dmaFile.MaterialEntries[meshEntry.MaterialIndex].Name.Contains("NoShadow")) {
                     objectMeshRenderer.shadowCastingMode = ShadowCastingMode.Off;
                 }
 
-                var materialShader = Shader.Find($"Custom/{materialDefinition.Name}");
-
-                if (materialShader == null) {
-                    Debug.LogWarning($"Missing Shader \"{materialDefinition.Name}\" for Object \"{adrFileName}\".");
-                    continue;
-                }
-
-                Material objectMaterial = new Material(materialShader);
-
-                var matFileName = "";
-                Material loadedMat = null;
-
-                foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT && !fastMode) {
-                        var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == parameterEntry.Object);
-                        textureName ??= "SOMETHING_HAS_GONE_WRONG.mat";
-                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
-                        loadedMat = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(materialsSavePath, matFileName));
-                    }
-                }
-
-                if (loadedMat != null) {
-                    objectMeshRenderer.material = loadedMat;
-                    meshObject.name = meshEntry.Mesh.name;
-                    continue;
-                }
-
-                foreach (var parameterEntry in materialEntry.ParameterEntries) {
-                    var parameterName = $"_{(ParameterName) parameterEntry.Hash}";
-
-                    if (!objectMaterial.HasProperty(parameterName)) {
-                        Debug.LogWarning($"{materialDefinition.Name}\t{parameterName}\t{parameterEntry.Class}\t{parameterEntry.Type}\t{parameterEntry.Int}\t{parameterEntry.Float}\t{parameterEntry.Vector4}\t{parameterEntry.Matrix4x4}\t{parameterEntry.Object}");
-                    }
-
-                    if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_SCALAR) {
-                        if (parameterEntry.Type == D3DXPARAMETER_TYPE.D3DXPT_FLOAT) {
-                            objectMaterial.SetFloat(parameterName, parameterEntry.Float);
-                        } else {
-                            objectMaterial.SetInteger(parameterName, parameterEntry.Int);
-                        }
-                    } else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_VECTOR) {
-                        objectMaterial.SetVector(parameterName, parameterEntry.Vector4);
-                    } else if (parameterEntry.Class is D3DXPARAMETER_CLASS.D3DXPC_MATRIX_ROWS or D3DXPARAMETER_CLASS.D3DXPC_MATRIX_COLUMNS) {
-                        objectMaterial.SetMatrix(parameterName, parameterEntry.Matrix4x4);
-                    } else if (parameterEntry.Class == D3DXPARAMETER_CLASS.D3DXPC_OBJECT) {
-                        var textureHash = parameterEntry.Object;
-
-                        var textureName = dmeFile.DmaFile.Textures.FirstOrDefault(x => JenkinsHelper.JenkinsOneAtATimeHash(x.ToUpper()) == textureHash);
-
-                        if (textureName is null) {
-                            Debug.LogError($"Failed to find texture. {textureHash}");
-                            continue;
-                        }
-
-                        var textureFilePath = Path.Combine(assetsPath, Path.ChangeExtension(textureName, "png"));
-
-                        var texture2d = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFilePath);
-
-                        if (texture2d == null) {
-                            Debug.LogError($"Failed to find texture. {textureFilePath}");
-                            continue;
-                        }
-
-                        objectMaterial.SetTexture(parameterName, texture2d);
-                        objectMaterial.SetTextureScale(parameterName, Vector2.right + Vector2.down);
-
-                        matFileName = Path.ChangeExtension(materialDefinition.Name + "_" + textureName.Split(".")[0] + adrFileName, "mat");
-                        objectMaterial.name = textureName.Split(".")[0];
-                    }
-                }
-                if (matFileName == "") {
-                    matFileName = $"See_LoadWorldWindow_Line_{LineNumber()}.mat";
-                }
-                if (!fastMode) {
-                    AssetDatabase.CreateAsset(objectMaterial, Path.Combine(materialsSavePath, matFileName));
-                }
-                meshObject.name = meshEntry.Mesh.name;
-                matFileName = "";
-
-                objectMeshRenderer.material = objectMaterial;
+                // in theory, this is resiliant to null materials
+                objectMeshRenderer.material = dmaFile.materials[meshEntry.MaterialIndex];
             }
 
             // Apply the extensions to the adr instance

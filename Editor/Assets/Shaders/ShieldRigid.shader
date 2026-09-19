@@ -1,4 +1,4 @@
-Shader "Custom/ShieldRigid"
+Shader "FLTK/Built-In/ShieldRigid"
 {
     Properties
     {

@@ -1,11 +1,11 @@
-Shader "Custom/SimpleRigidAlphaTest"
+Shader "FLTK/Built-In/SimpleRigidAlphaTest"
 {
     Properties
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _ScrollV("ScrollV", Float) = 0.0
         _ScrollU("ScrollU", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _FadeStencil("FadeStencil", Integer) = 0
         _DoubleSided("DoubleSided", Integer) = 0
 

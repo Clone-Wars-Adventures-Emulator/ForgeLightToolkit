@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 
 using UnityEngine;
 
@@ -22,13 +22,15 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             var magic = new string(reader.ReadChars(4));
 
-            if (magic != "GCK2")
+            if (magic != "GCK2") {
                 return false;
+            }
 
             Version = reader.ReadInt32();
 
-            if (Version < 0)
+            if (Version < 0) {
                 return false;
+            }
 
             TextureSize = reader.ReadInt32();
 
@@ -40,16 +42,19 @@ namespace ForgeLightToolkit.Editor.FileTypes
             var decompressedStream = new MemoryStream();
 
             using (var compressedStream = new MemoryStream(compressedData))
-            using (var zlibStream = new ZlibStream(compressedStream, CompressionMode.Decompress))
+            using (var zlibStream = new ZlibStream(compressedStream, CompressionMode.Decompress)) {
                 zlibStream.CopyTo(decompressedStream);
+            }
 
-            if (decompressedStream.Position != uncompressedLength)
+            if (decompressedStream.Position != uncompressedLength) {
                 return false;
+            }
 
             decompressedStream.Position = 0;
 
-            if (!LoadTexture(decompressedStream))
+            if (!LoadTexture(decompressedStream)) {
                 return false;
+            }
 
             return true;
         }
@@ -60,13 +65,15 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             var magic = new string(reader.ReadChars(4));
 
-            if (magic != "DDS ")
+            if (magic != "DDS ") {
                 return false;
+            }
 
             var size = reader.ReadInt32();
 
-            if (size != 124)
+            if (size != 124) {
                 return false;
+            }
 
             // DDS_HEADER
             var flags = reader.ReadInt32();

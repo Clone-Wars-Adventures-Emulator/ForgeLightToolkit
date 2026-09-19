@@ -1766,7 +1766,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
 
         [Serializable]
         public class ParticleEmitterDefinition {
-            public int id;
+            public ushort id;
             public string name;
             public string boneName;
             public float heading;

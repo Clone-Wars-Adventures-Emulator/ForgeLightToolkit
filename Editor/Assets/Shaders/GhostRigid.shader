@@ -1,9 +1,9 @@
-Shader "Custom/GhostRigid"
+Shader "FLTK/Built-In/GhostRigid"
 {
     Properties
     {
         _Diffuse("Diffuse", 2D) = "white" {}
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _Opacity("Opacity", Float) = 0.0
         _FallOff("FallOff", Float) = 0.0
         _ZRange("ZRange", Float) = 0.0
@@ -21,7 +21,7 @@ Shader "Custom/GhostRigid"
         #pragma surface surf Standard fullforwardshadows alpha
 
         float _ZRange;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         sampler2D _Diffuse;
 

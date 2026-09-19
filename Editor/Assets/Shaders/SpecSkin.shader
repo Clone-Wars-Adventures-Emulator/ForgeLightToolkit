@@ -1,11 +1,11 @@
-Shader "Custom/SpecSkin"
+Shader "FLTK/Built-In/SpecSkin"
 {
     Properties
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _Bias("Bias", Integer) = 0.0
         _Spec("Spec", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _FadeStencil("FadeStencil", Integer) = 0
     }
     SubShader

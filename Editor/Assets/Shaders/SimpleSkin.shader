@@ -1,4 +1,4 @@
-Shader "Custom/SimpleSkin"
+Shader "FLTK/Built-In/SimpleSkin"
 {
     Properties
     {
@@ -9,7 +9,7 @@ Shader "Custom/SimpleSkin"
         _Bias("Bias", Integer) = 0
         _DoubleSidedDefaultFalse("DoubleSidedDefaultFalse", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _Glow("Glow", Float) = 0.0
         _RimLighting("RimLighting", Float) = 0.0
     }

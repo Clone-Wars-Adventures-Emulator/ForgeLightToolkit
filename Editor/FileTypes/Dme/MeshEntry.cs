@@ -5,11 +5,9 @@ using UnityEngine;
 
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Dme
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Dme {
     [Serializable]
-    public class MeshEntry
-    {
+    public class MeshEntry {
         public int MaterialIndex;
 
         public int Unknown2;
@@ -27,10 +25,8 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
         public Mesh Mesh;
 
-        public bool CreateMesh(string name, MaterialEntry materialEntry, int meshIndex)
-        {
-            Mesh = new Mesh
-            {
+        public bool CreateMesh(string name, MaterialEntry materialEntry, int meshIndex) {
+            Mesh = new Mesh {
                 name = $"{name}_Mesh_{meshIndex}",
             };
 
@@ -43,16 +39,14 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
             var drawStyle = materialDefinition.DrawStyles.First();
 
-            if (drawStyle is null)
-            {
+            if (drawStyle is null) {
                 Debug.LogError("Material Definition doesn't contain a DrawStyle.");
                 return false;
             }
 
             var inputLayout = MaterialInfo.Instance?.InputLayouts.SingleOrDefault(x => x.NameHash == drawStyle.InputLayoutHash);
 
-            if (inputLayout is null)
-            {
+            if (inputLayout is null) {
                 Debug.LogError("Failed to find Input Layout.");
                 return false;
             }
@@ -63,25 +57,20 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
             var positionEntry = inputLayout.Entries.SingleOrDefault(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.Position);
 
-            if (positionEntry is null)
-            {
+            if (positionEntry is null) {
                 Debug.LogError("Model doesn't have a position entry.");
                 return false;
             }
 
-            if (positionEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float3)
-            {
-                for (var i = 0; i < VertexBufferCount; i++)
-                {
+            if (positionEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float3) {
+                for (var i = 0; i < VertexBufferCount; i++) {
                     var x = BitConverter.ToSingle(VertexBuffer, positionEntry.Offset + i * VertexSize + 0);
                     var y = BitConverter.ToSingle(VertexBuffer, positionEntry.Offset + i * VertexSize + 4);
                     var z = BitConverter.ToSingle(VertexBuffer, positionEntry.Offset + i * VertexSize + 8);
 
                     vertices[i] = new Vector3(x, y, z);
                 }
-            }
-            else
-            {
+            } else {
                 Debug.LogError($"Unimplemented Input Layout Type \"{positionEntry.Type}\" for Position.");
                 return false;
             }
@@ -94,12 +83,9 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
             var normalEntry = inputLayout.Entries.SingleOrDefault(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.Normal);
 
-            if (normalEntry is not null)
-            {
-                if (normalEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float3)
-                {
-                    for (var i = 0; i < VertexBufferCount; i++)
-                    {
+            if (normalEntry is not null) {
+                if (normalEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float3) {
+                    for (var i = 0; i < VertexBufferCount; i++) {
                         var startIndex = normalEntry.Offset + i * VertexSize;
 
                         var x = BitConverter.ToSingle(VertexBuffer, startIndex + 0);
@@ -108,9 +94,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
                         normals[i] = new Vector3(x, y, z);
                     }
-                }
-                else
-                {
+                } else {
                     Debug.LogError($"Unimplemented Input Layout Type \"{normalEntry.Type}\" for Normal.");
                     return false;
                 }
@@ -120,14 +104,11 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
             // UVs
 
-            foreach (var texCoordEntry in inputLayout.Entries.Where(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.TexCoord))
-            {
+            foreach (var texCoordEntry in inputLayout.Entries.Where(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.TexCoord)) {
                 var uvs = new Vector2[VertexBufferCount];
 
-                if (texCoordEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float2)
-                {
-                    for (var i = 0; i < VertexBufferCount; i++)
-                    {
+                if (texCoordEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float2) {
+                    for (var i = 0; i < VertexBufferCount; i++) {
                         var startIndex = texCoordEntry.Offset + i * VertexSize;
 
                         var x = BitConverter.ToSingle(VertexBuffer, startIndex + 0);
@@ -135,9 +116,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
                         uvs[i] = new Vector2(x, y);
                     }
-                }
-                else
-                {
+                } else {
                     Debug.LogError($"Unimplemented Input Layout Type \"{texCoordEntry.Type}\" for TexCoord, UsageIndex {texCoordEntry.UsageIndex}.");
                     return false;
                 }
@@ -149,10 +128,8 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme
 
             var indices = new int[IndexBufferCount];
 
-            for (var i = 0; i < IndexBufferCount; i++)
-            {
-                indices[i] = IndexSize switch
-                {
+            for (var i = 0; i < IndexBufferCount; i++) {
+                indices[i] = IndexSize switch {
                     2 => BitConverter.ToInt16(IndexBuffer, i * IndexSize),
                     4 => BitConverter.ToInt32(IndexBuffer, i * IndexSize),
                     _ => throw new NotImplementedException()

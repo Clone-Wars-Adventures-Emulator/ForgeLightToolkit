@@ -18,8 +18,9 @@ namespace ForgeLightToolkit.Editor
         {
             _stream = File.OpenRead(path);
 
-            if (_stream is null)
+            if (_stream is null) {
                 throw new ArgumentNullException(nameof(_stream));
+            }
 
             _br = new BinaryReader(_stream);
 
@@ -80,8 +81,9 @@ namespace ForgeLightToolkit.Editor
 
         public float ReadSingle()
         {
-            if (IsLittleEndian)
+            if (IsLittleEndian) {
                 return _br.ReadSingle();
+            }
 
             var data = _br.ReadBytes(4);
 
@@ -96,8 +98,9 @@ namespace ForgeLightToolkit.Editor
 
             char tempChar;
 
-            while ((tempChar = _br.ReadChar()) != '\0')
+            while ((tempChar = _br.ReadChar()) != '\0') {
                 tempString += tempChar;
+            }
 
             return tempString;
         }

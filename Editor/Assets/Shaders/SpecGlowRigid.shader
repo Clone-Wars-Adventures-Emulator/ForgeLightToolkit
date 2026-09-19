@@ -1,11 +1,11 @@
-Shader "Custom/SpecGlowRigid"
+Shader "FLTK/Built-In/SpecGlowRigid"
 {
     Properties
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _SpecularMap("SpecularMap", 2D) = "white" {}
         _Glow("Glow", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _FadeStencil("FadeStencil", Integer) = 0
     }
     SubShader

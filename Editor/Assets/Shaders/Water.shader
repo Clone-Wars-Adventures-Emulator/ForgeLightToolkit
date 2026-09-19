@@ -1,4 +1,4 @@
-Shader "Custom/Water"
+Shader "FLTK/Built-In/Water"
 {
     Properties
     {
@@ -8,7 +8,7 @@ Shader "Custom/Water"
         _Fresnel("Fresnel", Float) = 0
         _Refraction("Refraction", Float) = 0
         _Reflection("Reflection", Float) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
 
         _SunGlare("SunGlare", Float) = 0
 
@@ -41,7 +41,7 @@ Shader "Custom/Water"
         #pragma target 3.0
         #pragma surface surf StandardSpecular alpha
 
-        float4 _TintSemantic;
+        float4 _Tint;
         float _Reflection;
         samplerCUBE _Cube;
         float _Glow;
@@ -69,11 +69,11 @@ Shader "Custom/Water"
 
         void surf(Input IN, inout SurfaceOutputStandardSpecular o)
         {
-            float3 glow_color = _TintSemantic.rgb;
+            float3 glow_color = _Tint.rgb;
             glow_color *= _Glow * 1;
             
             float3 texturecube0 = texCUBE (_Cube, IN.worldRefl);
-            float3 reflection_intensity = (texturecube0.rgb + _TintSemantic.rgb) * _Reflection;
+            float3 reflection_intensity = (texturecube0.rgb + _Tint.rgb) * _Reflection;
             
             float2 texScroll1 = IN.uv_BumpMap1;
             float2 texScroll2 = IN.uv_BumpMap1;
@@ -103,8 +103,8 @@ Shader "Custom/Water"
             o.Normal = (b1 + b2 + b3);
             
             o.Emission = glow_color * .1;
-            o.Albedo = _TintSemantic.rgb / 3;
-            o.Alpha = _TintSemantic.a;
+            o.Albedo = _Tint.rgb / 3;
+            o.Alpha = _Tint.a;
             o.Specular = _Reflection * 0.015;
         }
 

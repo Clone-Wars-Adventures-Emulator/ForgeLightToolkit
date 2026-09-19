@@ -1,4 +1,4 @@
-Shader "Custom/SimpleRigidNoShadow"
+Shader "FLTK/Built-In/SimpleRigidNoShadow"
 {
     Properties
     {

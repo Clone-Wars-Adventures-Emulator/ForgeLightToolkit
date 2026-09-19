@@ -1,4 +1,4 @@
-Shader "Custom/TintMaskSkinAlphaTest"
+Shader "FLTK/Built-In/TintMaskSkinAlphaTest"
 {
     Properties
     {
@@ -9,7 +9,7 @@ Shader "Custom/TintMaskSkinAlphaTest"
         _Bias("Bias", Integer) = 0
         _DoubleSided("DoubleSided", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _Glow("Glow", Float) = 0.0
 
         _Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5
@@ -27,7 +27,7 @@ Shader "Custom/TintMaskSkinAlphaTest"
 
         sampler2D _Diffuse;
         sampler2D _TintMask;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {

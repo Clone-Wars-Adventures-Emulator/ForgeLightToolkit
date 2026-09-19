@@ -1,4 +1,4 @@
-Shader "Custom/DualTextureRigidGlowNoShadow"
+Shader "FLTK/Built-In/DualTextureRigidGlowNoShadow"
 {
     Properties
     {

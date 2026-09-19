@@ -1,4 +1,4 @@
-Shader "Custom/GlassRigid"
+Shader "FLTK/Built-In/GlassRigid"
 {
     Properties
     {

@@ -1,4 +1,4 @@
-Shader "Custom/Crystal"
+Shader "FLTK/Built-In/Crystal"
 {
     Properties
     {
@@ -8,7 +8,7 @@ Shader "Custom/Crystal"
         _InsideSpecular("InsideSpecular", Float) = 0.0
         _OutsideGlow("OutsideGlow", Float) = 0.0
         _OutsideSpecular("OutsideSpecular", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _FadeStencil("FadeStencil", Integer) = 0
     }
     SubShader
