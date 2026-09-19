@@ -1,4 +1,4 @@
-Shader "Custom/SimpleRigidAlphaScreen"
+Shader "FLTK/Built-In/SimpleRigidAlphaScreen"
 {
     Properties
     {

@@ -1,4 +1,4 @@
-Shader "Custom/DualTextureEnvSkin"
+Shader "FLTK/Built-In/DualTextureEnvSkin"
 {
     Properties
     {
@@ -24,7 +24,7 @@ Shader "Custom/DualTextureEnvSkin"
 
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {

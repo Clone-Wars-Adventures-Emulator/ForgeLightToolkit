@@ -1,4 +1,4 @@
-Shader "Custom/TintMaskSkin"
+Shader "FLTK/Built-In/TintMaskSkin"
 {
     Properties
     {

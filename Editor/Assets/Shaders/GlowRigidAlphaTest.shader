@@ -1,4 +1,4 @@
-Shader "Custom/GlowRigidAlphaTest"
+Shader "FLTK/Built-In/GlowRigidAlphaTest"
 {
     Properties
     {
@@ -8,7 +8,7 @@ Shader "Custom/GlowRigidAlphaTest"
         _ScrollV("ScrollV", Float) = 0.0
         _DoubleSided("DoubleSided", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _Glow("Glow", Float) = 0.0
 
         _Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5

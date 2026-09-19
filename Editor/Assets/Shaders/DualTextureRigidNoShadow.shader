@@ -1,4 +1,4 @@
-Shader "Custom/DualTextureRigidNoShadow"
+Shader "FLTK/Built-In/DualTextureRigidNoShadow"
 {
     Properties
     {
@@ -7,7 +7,7 @@ Shader "Custom/DualTextureRigidNoShadow"
         _Glow("Glow", Float) = 0.0
         _TextureClamp("TextureClamp", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
     }
     SubShader
     {
@@ -22,7 +22,7 @@ Shader "Custom/DualTextureRigidNoShadow"
 
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {

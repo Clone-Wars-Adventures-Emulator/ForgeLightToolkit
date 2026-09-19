@@ -1,10 +1,10 @@
-Shader "Custom/SpecSkinAlphaTest"
+Shader "FLTK/Built-In/SpecSkinAlphaTest"
 {
     Properties
     {
         // _Diffuse("Diffuse", 2D) = "white" {}
         // _Spec("ScrollV", Float) = 0.0
-        // _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        // _Tint("Tint", Color) = (0, 0, 0, 0)
         // _FadeStencil("FadeStencil", Integer) = 0
     }
     SubShader

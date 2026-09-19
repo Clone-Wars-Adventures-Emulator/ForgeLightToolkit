@@ -1,4 +1,4 @@
-Shader "Custom/DualTextureRigidAlpha"
+Shader "FLTK/Built-In/DualTextureRigidAlpha"
 {
     Properties
     {

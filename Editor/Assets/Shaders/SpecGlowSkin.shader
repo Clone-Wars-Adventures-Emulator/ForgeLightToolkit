@@ -1,4 +1,4 @@
-Shader "Custom/SpecGlowSkin"
+Shader "FLTK/Built-In/SpecGlowSkin"
 {
     Properties
     {

@@ -1,4 +1,4 @@
-Shader "Custom/HologramRigid"
+Shader "FLTK/Built-In/HologramRigid"
 {
     Properties
     {
@@ -17,7 +17,7 @@ Shader "Custom/HologramRigid"
         _FallOff("FallOff", Float) = 0.0
         _TextureIntensityBoost("TextureIntensityBoost", Float) = 0.0
         _Opacity("Opacity", Float) = 0.0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
     }
     SubShader
     {

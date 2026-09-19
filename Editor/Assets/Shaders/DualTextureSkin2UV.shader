@@ -1,4 +1,4 @@
-Shader "Custom/DualTextureSkin2UV"
+Shader "FLTK/Built-In/DualTextureSkin2UV"
 {
     Properties
     {
@@ -7,7 +7,7 @@ Shader "Custom/DualTextureSkin2UV"
         _RimLighting("RimLighting", Float) = 0.0
         _Bias("Bias", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
     }
     SubShader
     {
@@ -22,7 +22,7 @@ Shader "Custom/DualTextureSkin2UV"
 
         sampler2D _Diffuse;
         sampler2D _Diffuse2;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {

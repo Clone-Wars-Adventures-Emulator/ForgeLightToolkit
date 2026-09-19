@@ -1,4 +1,4 @@
-Shader "Custom/DualTextureRigid"
+Shader "FLTK/Built-In/DualTextureRigid"
 {
     Properties
     {

@@ -1,4 +1,4 @@
-Shader "Custom/Waterfall"
+Shader "FLTK/Built-In/Waterfall"
 {
     Properties
     {

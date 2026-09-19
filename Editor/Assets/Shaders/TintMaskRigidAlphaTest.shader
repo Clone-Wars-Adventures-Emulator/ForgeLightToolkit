@@ -1,4 +1,4 @@
-Shader "Custom/TintMaskRigidAlphaTest"
+Shader "FLTK/Built-In/TintMaskRigidAlphaTest"
 {
     Properties
     {
@@ -9,7 +9,7 @@ Shader "Custom/TintMaskRigidAlphaTest"
         _Bias("Bias", Integer) = 0
         _DoubleSided("DoubleSided", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
         _Glow("Glow", Float) = 0.0
 
         _Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5
@@ -27,7 +27,7 @@ Shader "Custom/TintMaskRigidAlphaTest"
 
         sampler2D _Diffuse;
         sampler2D _TintMask;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {
@@ -39,7 +39,7 @@ Shader "Custom/TintMaskRigidAlphaTest"
             float4 c = tex2D(_Diffuse, IN.uv_Diffuse);
             float4 t = tex2D(_TintMask, IN.uv_Diffuse);
 
-            o.Albedo = c.rgb + t.rgb * _TintSemantic;
+            o.Albedo = c.rgb + t.rgb * _Tint;
             o.Alpha = c.a;
         }
 

@@ -1,4 +1,4 @@
-Shader "Custom/EnvRigid"
+Shader "FLTK/Built-In/EnvRigid"
 {
     Properties
     {

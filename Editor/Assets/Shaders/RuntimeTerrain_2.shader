@@ -1,4 +1,4 @@
-Shader "Custom/RuntimeTerrain_2"
+Shader "FLTK/Built-In/RuntimeTerrain_2"
 {
     Properties
     {

@@ -1,11 +1,11 @@
-Shader "Custom/TintMaskRigid"
+Shader "FLTK/Built-In/TintMaskRigid"
 {
     Properties
     {
         _Diffuse("Diffuse", 2D) = "white" {}
         _DoubleSided("DoubleSided", Integer) = 0
         _FadeStencil("FadeStencil", Integer) = 0
-        _TintSemantic("TintSemantic", Color) = (0, 0, 0, 0)
+        _Tint("Tint", Color) = (0, 0, 0, 0)
     }
     SubShader
     {
@@ -20,7 +20,7 @@ Shader "Custom/TintMaskRigid"
 
         sampler2D _Diffuse;
         sampler2D _TintMask;
-        float4 _TintSemantic;
+        float4 _Tint;
 
         struct Input
         {
@@ -29,7 +29,7 @@ Shader "Custom/TintMaskRigid"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            float4 c = tex2D(_Diffuse, IN.uv_Diffuse) * _TintSemantic;
+            float4 c = tex2D(_Diffuse, IN.uv_Diffuse) * _Tint;
             o.Albedo = c.rgb;
             o.Alpha = c.a;
         }
