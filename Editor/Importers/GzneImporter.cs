@@ -1,5 +1,6 @@
-using UnityEngine;
+using ForgeLightToolkit.Editor.FileTypes.Gzne;
 using UnityEditor.AssetImporters;
+using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "gzne")]

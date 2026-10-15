@@ -1,25 +1,19 @@
-using UnityEngine;
+using ForgeLightToolkit.Editor.FileTypes.Gcnk;
 using UnityEditor.AssetImporters;
+using UnityEngine;
 
-using ForgeLightToolkit.Editor.FileTypes;
-
-namespace ForgeLightToolkit.Editor.Importers
-{
+namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "gcnk")]
-    public class GcnkImporter : ScriptedImporter
-    {
-        public override void OnImportAsset(AssetImportContext ctx)
-        {
-            if (string.IsNullOrEmpty(ctx.assetPath))
-            {
+    public class GcnkImporter : ScriptedImporter {
+        public override void OnImportAsset(AssetImportContext ctx) {
+            if (string.IsNullOrEmpty(ctx.assetPath)) {
                 ctx.LogImportError($"Invalid asset path. ({ctx.assetPath})");
                 return;
             }
 
             var gcnkFile = ScriptableObject.CreateInstance<GcnkFile>();
 
-            if (!gcnkFile.Load(ctx.assetPath))
-            {
+            if (!gcnkFile.Load(ctx.assetPath)) {
                 ctx.LogImportError($"Failed to load gcnk file. ({ctx.assetPath})");
                 return;
             }
@@ -29,7 +23,7 @@ namespace ForgeLightToolkit.Editor.Importers
 
             ctx.AddObjectToAsset("Mesh", gcnkFile.Mesh);
 
-            if(gcnkFile.DetailMask is not null) {
+            if (gcnkFile.DetailMask is not null) {
                 ctx.AddObjectToAsset("DetailMask", gcnkFile.DetailMask);
             }
         }

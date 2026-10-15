@@ -1,6 +1,6 @@
-using ForgeLightToolkit.Editor.FileTypes;
-using UnityEngine;
+using ForgeLightToolkit.Editor.FileTypes.Cdt;
 using UnityEditor.AssetImporters;
+using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "cdt")]

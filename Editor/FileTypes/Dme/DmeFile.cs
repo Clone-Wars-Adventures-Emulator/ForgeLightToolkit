@@ -1,11 +1,9 @@
+using ForgeLightToolkit.Editor.FileTypes.Dma;
 using System.IO;
 using System.Collections.Generic;
-
 using UnityEngine;
 
-using ForgeLightToolkit.Editor.FileTypes.Dme;
-
-namespace ForgeLightToolkit.Editor.FileTypes {
+namespace ForgeLightToolkit.Editor.FileTypes.Dme {
     public class DmeFile : ScriptableObject {
         [HideInInspector]
         public DmaFile DmaFile;

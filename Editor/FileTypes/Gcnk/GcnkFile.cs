@@ -1,15 +1,11 @@
+using Ionic.Zlib;
 using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-
 using UnityEngine;
 
-using Ionic.Zlib;
-
-using ForgeLightToolkit.Editor.FileTypes.Gcnk;
-
-namespace ForgeLightToolkit.Editor.FileTypes {
+namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     public class GcnkFile : ScriptableObject {
         public int Version;
 
@@ -151,8 +147,8 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         for (var i = 0; i < data.Length; i += 2) {
                             var pixel = reader.ReadByte();
 
-                            data[i] = (byte)((pixel >> 4) * 16);
-                            data[i + 1] = (byte)((pixel & 15) * 16);
+                            data[i] = (byte) ((pixel >> 4) * 16);
+                            data[i + 1] = (byte) ((pixel & 15) * 16);
                         }
 
                         DetailMask = new Texture2D(detailMaskSize, detailMaskSize, TextureFormat.R8, false) {
@@ -257,14 +253,14 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         }
 
                         size = new Vector3(
-                            (float)(aabbMaxX - aabbMinX) / quantization.x,
-                            (float)(aabbMaxY - aabbMinY) / quantization.y,
-                            (float)(aabbMaxZ - aabbMinZ) / quantization.z
+                            aabbMaxX - aabbMinX / quantization.x,
+                            aabbMaxY - aabbMinY / quantization.y,
+                            aabbMaxZ - aabbMinZ / quantization.z
                         );
                         center = new Vector3(
-                            (float)aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,
-                            (float)aabbMinY / quantization.y + size.y / 2.0f + aabbMin.y,
-                            (float)aabbMinZ / quantization.z + size.z / 2.0f + aabbMin.z
+                            aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,
+                            aabbMinY / quantization.y + size.y / 2.0f + aabbMin.y,
+                            aabbMinZ / quantization.z + size.z / 2.0f + aabbMin.z
                         );
                     } else {
                         var aabbMinNode = reader.ReadVector4();
@@ -310,7 +306,7 @@ namespace ForgeLightToolkit.Editor.FileTypes {
                         // Right child
                         var escapeIndex = escapeIndices[i];
                         if (escapeIndex != null && escapeIndex < nodeCount) {
-                            depth[(int)escapeIndex] = Math.Min(depth[(int)escapeIndex], depth[i] + 1);
+                            depth[(int) escapeIndex] = Math.Min(depth[(int) escapeIndex], depth[i] + 1);
                         }
                     }
                 }

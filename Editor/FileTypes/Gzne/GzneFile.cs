@@ -1,10 +1,9 @@
-using ForgeLightToolkit.Editor;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ForgeLightToolkit {
+namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
     public class GzneFile : ScriptableObject {
         public bool HideTerrain;
 

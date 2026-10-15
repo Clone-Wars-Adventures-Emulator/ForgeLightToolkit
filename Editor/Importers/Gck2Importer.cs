@@ -1,25 +1,19 @@
-﻿using UnityEngine;
+using ForgeLightToolkit.Editor.FileTypes.Gck2;
 using UnityEditor.AssetImporters;
+using UnityEngine;
 
-using ForgeLightToolkit.Editor.FileTypes;
-
-namespace ForgeLightToolkit.Editor.Importers
-{
+namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "gck2")]
-    public class Gck2Importer : ScriptedImporter
-    {
-        public override void OnImportAsset(AssetImportContext ctx)
-        {
-            if (string.IsNullOrEmpty(ctx.assetPath))
-            {
+    public class Gck2Importer : ScriptedImporter {
+        public override void OnImportAsset(AssetImportContext ctx) {
+            if (string.IsNullOrEmpty(ctx.assetPath)) {
                 ctx.LogImportError($"Invalid asset path. ({ctx.assetPath})");
                 return;
             }
 
             var gck2File = ScriptableObject.CreateInstance<Gck2File>();
 
-            if(!gck2File.Load(ctx.assetPath))
-            {
+            if (!gck2File.Load(ctx.assetPath)) {
                 ctx.LogImportError($"Failed to load gck2 file. ({ctx.assetPath})");
                 return;
             }

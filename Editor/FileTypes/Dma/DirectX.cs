@@ -1,7 +1,5 @@
-﻿namespace ForgeLightToolkit.Editor.FileTypes.Dma
-{
-    public enum D3DXPARAMETER_CLASS : uint
-    {
+namespace ForgeLightToolkit.Editor.FileTypes.Dma {
+    public enum D3DXPARAMETER_CLASS : uint {
         D3DXPC_SCALAR,
         D3DXPC_VECTOR,
         D3DXPC_MATRIX_ROWS,
@@ -10,8 +8,7 @@
         D3DXPC_STRUCT
     }
 
-    public enum D3DXPARAMETER_TYPE : uint
-    {
+    public enum D3DXPARAMETER_TYPE : uint {
         D3DXPT_VOID,
         D3DXPT_BOOL,
         D3DXPT_INT,

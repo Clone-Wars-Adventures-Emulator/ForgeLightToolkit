@@ -1,12 +1,9 @@
-﻿using System;
-
+using System;
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     [Serializable]
-    public class RawArea
-    {
+    public class RawArea {
         public string Name;
 
         public int Unknown2;
@@ -20,8 +17,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
 
         public Vector3 Unknown7;
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             Name = reader.ReadNullTerminatedString();
 
             Unknown2 = reader.ReadInt32();

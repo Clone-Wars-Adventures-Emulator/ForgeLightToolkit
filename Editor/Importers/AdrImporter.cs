@@ -1,7 +1,6 @@
-using UnityEngine;
+using ForgeLightToolkit.Editor.FileTypes.Adr;
 using UnityEditor.AssetImporters;
-
-using ForgeLightToolkit.Editor.FileTypes;
+using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
     [ScriptedImporter(1, "adr")]

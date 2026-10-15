@@ -1,9 +1,7 @@
+using ForgeLightToolkit.Editor.FileTypes.Dma;
 using System;
 using System.Linq;
-
 using UnityEngine;
-
-using ForgeLightToolkit.Editor.FileTypes.Dma;
 
 namespace ForgeLightToolkit.Editor.FileTypes.Dme {
     [Serializable]

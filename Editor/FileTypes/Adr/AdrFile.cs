@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes {
+namespace ForgeLightToolkit.Editor.FileTypes.Adr {
     public class AdrFile : ScriptableObject {
         public enum EnumPrimaryDataType : byte {
             Unknown = 0x00,

@@ -1,12 +1,9 @@
-﻿using System;
-
+using System;
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     [Serializable]
-    public class RawLight
-    {
+    public class RawLight {
         public string Name;
         public string ColorName;
 
@@ -18,8 +15,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
         public float Intensity;
         public Color32 Color;
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             Name = reader.ReadNullTerminatedString();
             ColorName = reader.ReadNullTerminatedString();
 

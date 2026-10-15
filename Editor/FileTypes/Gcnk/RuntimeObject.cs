@@ -1,13 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     [Serializable]
-    public class RuntimeObject
-    {
+    public class RuntimeObject {
         private readonly int _version;
 
         public int Unknown; // TODO
@@ -30,13 +27,11 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
 
         public List<byte[]> Unknown12 = new();
 
-        public RuntimeObject(int version)
-        {
+        public RuntimeObject(int version) {
             _version = version;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"{nameof(Unknown)}: {Unknown}, " +
                    $"{nameof(FileName)}: {FileName}, " +
                    $"{nameof(Position)}: ({Position.x}, {Position.y}, {Position.z}), " +
@@ -49,8 +44,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
                    $"{nameof(Unknown11)}: {Unknown11}";
         }
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             Unknown = reader.ReadInt32();
 
             FileName = reader.ReadNullTerminatedString();
@@ -62,39 +56,31 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
 
             Scale = reader.ReadSingle();
 
-            if (_version >= 6)
-            {
+            if (_version >= 6) {
                 MaterialName = reader.ReadNullTerminatedString();
                 TintAlias = reader.ReadNullTerminatedString();
 
-                if (!string.IsNullOrEmpty(TintAlias))
-                {
+                if (!string.IsNullOrEmpty(TintAlias)) {
                     Unknown9 = reader.ReadVector4();
                 }
             }
 
             reader.Skip(4);
 
-            if (_version > 4)
-            {
+            if (_version > 4) {
                 ObjectId = reader.ReadInt32();
-            }
-            else
-            {
+            } else {
                 var unknown = reader.ReadNullTerminatedString();
                 Debug.Log($"Unknown RuntimeObject Value: {unknown}");
             }
 
             Unknown11 = reader.ReadInt32();
 
-            if (_version > 2)
-            {
+            if (_version > 2) {
                 var unknownCount = reader.ReadInt32();
 
-                if (unknownCount > 0)
-                {
-                    for (var i = 0; i < unknownCount; i++)
-                    {
+                if (unknownCount > 0) {
+                    for (var i = 0; i < unknownCount; i++) {
                         var unknown12Size = reader.ReadInt32();
 
                         Unknown12.Add(reader.ReadBytes(unknown12Size * 4));

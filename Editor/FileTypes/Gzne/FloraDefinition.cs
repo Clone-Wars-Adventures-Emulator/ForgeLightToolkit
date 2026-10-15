@@ -1,19 +1,14 @@
 using System;
 
-using ForgeLightToolkit.Editor;
-
-namespace ForgeLightToolkit
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
     [Serializable]
-    public class FloraDefinition
-    {
+    public class FloraDefinition {
         public string Name;
         public string Texture;
 
         public bool Unknown;
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             Name = reader.ReadNullTerminatedString();
             Texture = reader.ReadNullTerminatedString();
 

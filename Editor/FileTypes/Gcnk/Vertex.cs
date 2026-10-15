@@ -1,9 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
-{
-    public struct Vertex
-    {
+namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
+    public struct Vertex {
         public Vector3 Position;
 
         public Vector3 Normal;
@@ -14,10 +12,10 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
         public Vector2 TexCoord;
         public Vector2 TexCoord2;
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             Position = reader.ReadVector3();
 
+            // TODO: correct?
             Normal.x = reader.ReadByte() / 127.5f - 1;
             Normal.y = reader.ReadByte() / 127.5f - 1;
             Normal.z = reader.ReadByte() / 127.5f - 1;

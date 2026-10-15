@@ -1,17 +1,14 @@
-﻿using System;
+using System;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Gcnk
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     [Serializable]
-    public class ExportRenderBatch
-    {
+    public class ExportRenderBatch {
         public int IndexOffset;
         public int IndexCount;
         public int VertexOffset;
         public int VertexCount;
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             IndexOffset = reader.ReadInt32();
             IndexCount = reader.ReadInt32();
             VertexOffset = reader.ReadInt32();

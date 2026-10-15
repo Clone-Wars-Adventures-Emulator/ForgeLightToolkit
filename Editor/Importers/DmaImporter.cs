@@ -1,4 +1,3 @@
-using ForgeLightToolkit.Editor.FileTypes;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 using UnityEditor.AssetImporters;
 using UnityEngine;

@@ -1,12 +1,9 @@
 using System;
-
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes.Map
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Map {
     [Serializable]
-    public struct Node
-    {
+    public struct Node {
         public int Id;
 
         public Vector3 Position;
@@ -15,8 +12,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Map
     }
 
     [Serializable]
-    public struct Edge
-    {
+    public struct Edge {
         public int Id;
 
         public float Distance;

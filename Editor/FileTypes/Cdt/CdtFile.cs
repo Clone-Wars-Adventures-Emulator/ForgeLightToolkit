@@ -2,7 +2,7 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes {
+namespace ForgeLightToolkit.Editor.FileTypes.Cdt {
     public class CdtFile : ScriptableObject {
         public enum EnumUnknownEnum : uint {
             Unknown = 0,

@@ -1,6 +1,12 @@
 using ForgeLightToolkit.Editor.FileTypes;
+using ForgeLightToolkit.Editor.FileTypes.Adr;
+using ForgeLightToolkit.Editor.FileTypes.Agr;
+using ForgeLightToolkit.Editor.FileTypes.Cdt;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
+using ForgeLightToolkit.Editor.FileTypes.Dme;
+using ForgeLightToolkit.Editor.FileTypes.Gck2;
 using ForgeLightToolkit.Editor.FileTypes.Gcnk;
+using ForgeLightToolkit.Editor.FileTypes.Gzne;
 using ForgeLightToolkit.Runtime;
 using ForgeLightToolkit.Runtime.EditorDebug;
 using System;

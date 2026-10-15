@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-using ForgeLightToolkit.Editor;
-
-namespace ForgeLightToolkit
-{
+namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
     [Serializable]
-    public class EcoData
-    {
+    public class EcoData {
         public int Unknown;
 
         public string Name;
@@ -17,8 +13,7 @@ namespace ForgeLightToolkit
 
         public List<FloraData> FloraData = new();
 
-        public void Deserialize(Reader reader)
-        {
+        public void Deserialize(Reader reader) {
             Unknown = reader.ReadInt32();
 
             Name = reader.ReadNullTerminatedString();
@@ -28,8 +23,7 @@ namespace ForgeLightToolkit
 
             var floraDataCount = reader.ReadInt32();
 
-            for (var i = 0; i < floraDataCount; i++)
-            {
+            for (var i = 0; i < floraDataCount; i++) {
                 var floraData = new FloraData();
 
                 floraData.Deserialize(reader);

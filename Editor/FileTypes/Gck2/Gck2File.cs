@@ -1,21 +1,16 @@
+using Ionic.Zlib;
 using System.IO;
-
 using UnityEngine;
 
-using Ionic.Zlib;
-
-namespace ForgeLightToolkit.Editor.FileTypes
-{
-    public class Gck2File : ScriptableObject
-    {
+namespace ForgeLightToolkit.Editor.FileTypes.Gck2 {
+    public class Gck2File : ScriptableObject {
         public int Version;
 
         public int TextureSize;
 
         public Texture2D Texture;
 
-        public bool Load(string filePath)
-        {
+        public bool Load(string filePath) {
             name = Path.GetFileNameWithoutExtension(filePath);
 
             var reader = new Reader(File.OpenRead(filePath));
@@ -59,8 +54,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
             return true;
         }
 
-        private bool LoadTexture(Stream textureStream)
-        {
+        private bool LoadTexture(Stream textureStream) {
             var reader = new Reader(textureStream);
 
             var magic = new string(reader.ReadChars(4));
@@ -118,18 +112,15 @@ namespace ForgeLightToolkit.Editor.FileTypes
 
             TextureFormat textureFormat;
 
-            switch (fourCc)
-            {
+            switch (fourCc) {
                 case true when ddspfFourCc == "DXT1":
                     textureFormat = TextureFormat.DXT1;
                     break;
                 case true when ddspfFourCc == "DXT5":
                     textureFormat = TextureFormat.DXT5;
                     break;
-                default:
-                {
-                    switch (rgb)
-                    {
+                default: {
+                    switch (rgb) {
                         case true when rgb888 || bgr888:
                             textureFormat = alphaPixels ? TextureFormat.RGBA32 : TextureFormat.RGB24;
                             break;
@@ -153,8 +144,7 @@ namespace ForgeLightToolkit.Editor.FileTypes
                 }
             }
 
-            Texture = new Texture2D(width, height, textureFormat, mipMapCount > 1)
-            {
+            Texture = new Texture2D(width, height, textureFormat, mipMapCount > 1) {
                 name = name
             };
 

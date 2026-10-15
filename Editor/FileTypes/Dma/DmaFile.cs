@@ -1,14 +1,13 @@
 // Uncomment if you want to fill in missing FLTK Built In shaders
 // #define COMPLTAIN_ABOUT_MISSING_BUILT_INS
 
-using ForgeLightToolkit.Editor.FileTypes.Dma;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace ForgeLightToolkit.Editor.FileTypes {
+namespace ForgeLightToolkit.Editor.FileTypes.Dma {
     public class DmaFile : ScriptableObject {
         // The set of ForgeLight materials for which FLTK does not have a built in shader
         private static readonly HashSet<string> KnownMissingShaders = new() {
