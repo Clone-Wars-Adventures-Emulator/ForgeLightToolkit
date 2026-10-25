@@ -18,7 +18,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Cdt {
             UnknownPurpose_0x2A = 0x2A,
             UnknownPurpose_0x2B = 0x2B,
             UnknownPurpose_0x2C = 0x2C,
-            HighBidDefault = 0x80000001
+            HighBitDefault = 0x80000001
         }
 
         public bool invertMeshIndicies = true;
@@ -73,7 +73,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Cdt {
                 var y = reader.ReadSingle();
                 var z = reader.ReadSingle();
 
-                verticies.Add(new Vector3(x, y, z));
+                verticies.Add(AxisConversion.Position(new Vector3(x, y, z)));
             }
 
             var triangleCount = reader.ReadUInt32();
@@ -84,17 +84,18 @@ namespace ForgeLightToolkit.Editor.FileTypes.Cdt {
             }
 
             // because unity and forgelight disagree on the z axis (only sometimes....), we need to reverse the indicies here to get the front face facing the right way
-            var reversedIndicies = new List<int>(indices);
-            if (invertMeshIndicies) {
-                reversedIndicies.Reverse();
-            }
+            //var reversedIndicies = new List<int>(indices);
+            //if (invertMeshIndicies) {
+            //    reversedIndicies.Reverse();
+            //}
 
             colliderMesh = new Mesh();
             colliderMesh.SetVertices(verticies);
-            colliderMesh.SetIndices(reversedIndicies, MeshTopology.Triangles, 0);
+            //colliderMesh.SetIndices(reversedIndicies, MeshTopology.Triangles, 0);
+            colliderMesh.SetIndices(indices, MeshTopology.Triangles, 0);
             colliderMesh.name = $"{name}_Collider";
 
-            // TODO: possible future, read what ever bullet physics data goes right here
+            // Will be ignoring the bullet physics BVH data here, unity likely makes its own for mesh colliders
 
             return true;
         }

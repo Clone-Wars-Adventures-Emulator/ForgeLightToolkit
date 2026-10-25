@@ -10,6 +10,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
         public string Unknown3;
 
+        // probably pos and rot
         public Vector4 Unknown4;
         public Vector4 Unknown5;
 

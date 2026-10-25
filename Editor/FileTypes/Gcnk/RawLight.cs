@@ -21,7 +21,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
             Type = reader.ReadByte();
 
-            Position = reader.ReadVector4();
+            Position = AxisConversion.Position(reader.ReadVector4());
 
             Range = reader.ReadSingle();
             Intensity = reader.ReadSingle();

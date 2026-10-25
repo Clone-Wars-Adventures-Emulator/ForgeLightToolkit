@@ -12,18 +12,23 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
 
         public int TilePerChunkAxis => ChunkSize / TileSize;
 
+        // I think this was misunderstood by FLTK, need to find out what this actually is and how its used
         public float WorldSize;
+
+        // Always 8, except for RailsTest, when its a nonsensical value.....
         public int Unknown5;
 
-        public int StartX;
-        public int StartY;
+        public int MinChunkX;
+        public int MinChunkZ;
+        public int MaxChunkX;
+        public int MaxChunkZ;
 
-        public int Unknown8;
-        public int Unknown9;
+        // this is likely some CRC or some other counter or hash for validation
         public int Unknown10;
 
         public List<EcoData> EcoData = new();
 
+        // Not used by CWA
         public List<FloraDefinition> FloraDefinitions = new();
 
         public List<Mesh> wallMeshes = new();
@@ -54,10 +59,12 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
 
             WorldSize = reader.ReadSingle();
             Unknown5 = reader.ReadInt32();
-            StartX = reader.ReadInt32();
-            StartY = reader.ReadInt32();
-            Unknown8 = reader.ReadInt32();
-            Unknown9 = reader.ReadInt32();
+            MinChunkX = reader.ReadInt32();
+            MinChunkZ = reader.ReadInt32();
+            MaxChunkX = reader.ReadInt32();
+            MaxChunkZ = reader.ReadInt32();
+
+            // This is supposedly unused
             Unknown10 = reader.ReadInt32();
 
             var ecoDataCount = reader.ReadInt32();
@@ -92,7 +99,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
 
                     var invisibleWallVertices = new List<Vector3>();
                     for (var j = 0; j < invisibleWallVertexCount; j++) {
-                        invisibleWallVertices.Add(reader.ReadVector3());
+                        invisibleWallVertices.Add(AxisConversion.Position(reader.ReadVector3()));
                     }
 
                     // unfortunately, ForgeLight saved these walls a TriangleStrip meshes (see https://en.wikipedia.org/wiki/Triangle_strip)
@@ -118,12 +125,14 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
                             idxs.Add(idx);
                         }
                     }
+                    var reversedIndcies = new List<int>(idxs);
+                    reversedIndcies.Reverse();
 
                     var mesh = new Mesh {
                         name = $"{name}_InvisibleWall_{i}"
                     };
                     mesh.SetVertices(invisibleWallVertices);
-                    mesh.SetIndices(idxs, MeshTopology.Triangles, 0);
+                    mesh.SetIndices(reversedIndcies, MeshTopology.Triangles, 0);
                     wallMeshes.Add(mesh);
                 }
             }

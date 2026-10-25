@@ -39,6 +39,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dma {
                     break;
 
                 case D3DXPARAMETER_CLASS.D3DXPC_VECTOR:
+                    // TODO: does the z axis get inverted here?
                     Vector4 = parameterReader.ReadVector4();
                     break;
 

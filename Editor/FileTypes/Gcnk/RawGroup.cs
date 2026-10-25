@@ -4,8 +4,10 @@ using UnityEngine;
 namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     [Serializable]
     public class RawGroup {
+        // probably group file name
         public string Unknown;
 
+        // probably pos and rot
         public Vector4 Unknown2;
         public Vector4 Unknown3;
 

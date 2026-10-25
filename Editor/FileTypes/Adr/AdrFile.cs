@@ -280,10 +280,12 @@ namespace ForgeLightToolkit.Editor.FileTypes.Adr {
                         defn.boneName = reader.ReadNullTerminatedString();
                         break;
                     case EnumParticleDataFieldType.Heading:
-                        defn.heading = reader.ReadAdrFloat();
+                        // account for engine axis difference
+                        defn.pitch = -reader.ReadAdrFloat();
                         break;
                     case EnumParticleDataFieldType.Pitch:
-                        defn.pitch = reader.ReadAdrFloat();
+                        // account for engine axis difference
+                        defn.heading = -reader.ReadAdrFloat();
                         break;
                     case EnumParticleDataFieldType.Scale:
                         defn.scale = reader.ReadAdrFloat();
@@ -295,7 +297,8 @@ namespace ForgeLightToolkit.Editor.FileTypes.Adr {
                         defn.offsetY = reader.ReadAdrFloat();
                         break;
                     case EnumParticleDataFieldType.OffsetZ:
-                        defn.offsetZ = reader.ReadAdrFloat();
+                        // account for engine axis difference manually
+                        defn.offsetZ = -reader.ReadAdrFloat();
                         break;
                     case EnumParticleDataFieldType.UnknownBoneString:
                         defn.unknownBoneString = reader.ReadNullTerminatedString();

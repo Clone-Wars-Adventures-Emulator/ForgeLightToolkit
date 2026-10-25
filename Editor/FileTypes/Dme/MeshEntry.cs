@@ -66,7 +66,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
                     var y = BitConverter.ToSingle(VertexBuffer, positionEntry.Offset + i * VertexSize + 4);
                     var z = BitConverter.ToSingle(VertexBuffer, positionEntry.Offset + i * VertexSize + 8);
 
-                    vertices[i] = new Vector3(x, y, z);
+                    vertices[i] = AxisConversion.Position(new Vector3(x, y, z));
                 }
             } else {
                 Debug.LogError($"Unimplemented Input Layout Type \"{positionEntry.Type}\" for Position.");
@@ -90,7 +90,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
                         var y = BitConverter.ToSingle(VertexBuffer, startIndex + 4);
                         var z = BitConverter.ToSingle(VertexBuffer, startIndex + 8);
 
-                        normals[i] = new Vector3(x, y, z);
+                        normals[i] = AxisConversion.Position(new Vector3(x, y, z));
                     }
                 } else {
                     Debug.LogError($"Unimplemented Input Layout Type \"{normalEntry.Type}\" for Normal.");

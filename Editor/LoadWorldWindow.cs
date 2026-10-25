@@ -17,7 +17,6 @@ using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using static ForgeLightToolkit.Editor.MaterialInfo;
 
 namespace ForgeLightToolkit.Editor {
     public class LoadWorldWindow : EditorWindow {
@@ -300,7 +299,7 @@ namespace ForgeLightToolkit.Editor {
                             continue;
                         }
 
-                        LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, new Vector4(0, 0, 0, 0));
+                        LoadAdrFile(adrFile.name + ".adr", null, new Vector4(0, 0, 0, 0), 1.0f, Quaternion.identity);
                     }
                 } catch (Exception e) {
                     Debug.LogError($"Caught Exception when trying to import adr file(s) {adrName}");
@@ -368,8 +367,8 @@ namespace ForgeLightToolkit.Editor {
 
             Dictionary<int, RuntimeObject> loadedRuntimeObjects = new();
 
-            for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
-                for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
+            for (var x = gzneFile.MinChunkX; x <= gzneFile.MaxChunkX; x += gzneFile.TilePerChunkAxis) {
+                for (var y = gzneFile.MinChunkZ; y <= gzneFile.MaxChunkZ; y += gzneFile.TilePerChunkAxis) {
                     var chunkFileName = $"{loadedWorldName}_{x}_{y}";
 
                     var gcnkFilePath = Path.Combine(assetsPath, $"{chunkFileName}.gcnk");
@@ -406,20 +405,20 @@ namespace ForgeLightToolkit.Editor {
 
                     if (!gzneFile.HideTerrain) {
                         var chunkMeshFilter = chunkObject.AddComponent<MeshFilter>();
-
                         chunkMeshFilter.sharedMesh = gcnkFile.Mesh;
 
-                        var chunkMeshRenderer = chunkObject.AddComponent<MeshRenderer>();
+                        var meshCollider = chunkObject.AddComponent<MeshCollider>();
+                        meshCollider.sharedMesh = gcnkFile.Mesh;
 
+                        var chunkMeshRenderer = chunkObject.AddComponent<MeshRenderer>();
                         var chunkMaterials = new Material[gcnkFile.Mesh.subMeshCount];
 
                         var gck2FilePath = Path.Combine(assetsPath, $"{chunkFileName}.gck2");
-
                         var gck2File = AssetDatabase.LoadAssetAtPath<Gck2File>(gck2FilePath);
 
                         foreach (var tile in gcnkFile.Tiles) {
                             Material loadedChunkMaterial = AssetDatabase.LoadAssetAtPath<Material>(Path.Combine(terrainMaterialsSavePath, gcnkFile.name + "_" + tile.Index.ToString() + ".mat"));
-                            var chunkMaterial = new Material(Shader.Find($"Custom/RuntimeTerrain_{tile.EcoDataList.Count}")) {
+                            var chunkMaterial = new Material(Shader.Find($"FLTK/Built-In/RuntimeTerrain_{tile.EcoDataList.Count}")) {
                                 name = $"Tile {tile.Index}"
                             };
 
@@ -511,20 +510,18 @@ namespace ForgeLightToolkit.Editor {
 
             addWallsToGameObject(flWorld, gzneFile);
 
-            worldObject.transform.localScale = new Vector3(1, 1, -1);
             if (!fastMode) {
                 PrefabUtility.SaveAsPrefabAssetAndConnect(worldObject, Path.Combine(worldPrefabSavePath, worldObject.name + ".prefab"), InteractionMode.AutomatedAction);
             }
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Vector4 rotation, int runtimeId = 0) {
+        private void LoadAdrFile(string adrFileName, GameObject parentObject, Vector4 position, float scale, Quaternion rotation, int runtimeId = 0) {
             var existingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine(prefabSavePath, Path.ChangeExtension(adrFileName, "prefab")));
             if (existingPrefab != null && objectsAlreadyProcessed.Contains(adrFileName.Split(".")[0]) && !fastMode) {
                 GameObject loadedObject = PrefabUtility.InstantiatePrefab(existingPrefab, parentObject.transform) as GameObject;
-                loadedObject.transform.localPosition = position;
+                loadedObject.transform.SetLocalPositionAndRotation(position, rotation);
                 loadedObject.transform.localScale = Vector3.one * scale;
-                loadedObject.transform.localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg);
 
                 if (!loadedObject.TryGetComponent<ForgelightObject>(out var forgelightObject)) {
                     Debug.LogWarning($"Prefab for {adrFileName} was missing the ForgelightObject component. Adding a new instance");
@@ -570,7 +567,7 @@ namespace ForgeLightToolkit.Editor {
                     parent = parentObject == null ? null : parentObject.transform,
                     localPosition = position,
                     localScale = Vector3.one * scale,
-                    localRotation = Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg)
+                    localRotation = rotation
                 }
             };
 
@@ -614,7 +611,7 @@ namespace ForgeLightToolkit.Editor {
                 runtimeObject.transform.localScale = Vector3.one;
                 PrefabUtility.SaveAsPrefabAssetAndConnect(runtimeObject, Path.Combine(prefabSavePath, runtimeObject.name + ".prefab"), InteractionMode.AutomatedAction);
                 runtimeObject.transform.localScale = Vector3.one * scale;
-                runtimeObject.transform.SetLocalPositionAndRotation(position, Quaternion.Euler(rotation.y * Mathf.Rad2Deg, rotation.x * Mathf.Rad2Deg, rotation.z * Mathf.Rad2Deg));
+                runtimeObject.transform.SetLocalPositionAndRotation(position, rotation);
             }
 
             // only do this after the prefab has been saved, Runtime instance IDs of objects shouldnt be saved in that
@@ -830,8 +827,8 @@ namespace ForgeLightToolkit.Editor {
             string worldName = gzneFile.name;
 
             List<GcnkFile> chunks = new();
-            for (var x = gzneFile.StartX; x < gzneFile.WorldSize; x += gzneFile.TilePerChunkAxis) {
-                for (var y = gzneFile.StartY; y < gzneFile.WorldSize; y += gzneFile.TilePerChunkAxis) {
+            for (var x = gzneFile.MinChunkX; x <= gzneFile.MaxChunkX; x += gzneFile.TilePerChunkAxis) {
+                for (var y = gzneFile.MinChunkZ; y <= gzneFile.MaxChunkZ; y += gzneFile.TilePerChunkAxis) {
                     var chunkFileName = $"{worldName}_{x}_{y}";
 
                     var gcnkFileAssetPaths = AssetDatabase.FindAssets($"glob:\"{chunkFileName}.gcnk\"").Select(AssetDatabase.GUIDToAssetPath).ToArray();

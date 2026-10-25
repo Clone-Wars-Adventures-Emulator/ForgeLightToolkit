@@ -13,7 +13,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
         public string Unknown3;
 
         public Vector4 Position;
-        public Vector4 Rotation;
+        public Quaternion Rotation;
 
         public float Scale;
 
@@ -50,9 +50,8 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             FileName = reader.ReadNullTerminatedString();
             Unknown3 = reader.ReadNullTerminatedString();
 
-            Position = reader.ReadVector4();
-
-            Rotation = reader.ReadVector4();
+            Position = AxisConversion.Position(reader.ReadVector4());
+            Rotation = AxisConversion.Rotation(reader.ReadVector4());
 
             Scale = reader.ReadSingle();
 

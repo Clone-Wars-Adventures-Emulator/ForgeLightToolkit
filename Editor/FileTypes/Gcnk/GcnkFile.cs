@@ -253,9 +253,9 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
                         }
 
                         size = new Vector3(
-                            aabbMaxX - aabbMinX / quantization.x,
-                            aabbMaxY - aabbMinY / quantization.y,
-                            aabbMaxZ - aabbMinZ / quantization.z
+                            (aabbMaxX - aabbMinX) / quantization.x,
+                            (aabbMaxY - aabbMinY) / quantization.y,
+                            (aabbMaxZ - aabbMinZ) / quantization.z
                         );
                         center = new Vector3(
                             aabbMinX / quantization.x + size.x / 2.0f + aabbMin.x,

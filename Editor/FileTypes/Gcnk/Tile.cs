@@ -9,6 +9,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
         public Vector2Int Coords;
 
+        // TODO: this may not be a position
         public Vector4 Position;
 
         public int Unknown7;
@@ -40,7 +41,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             Coords.x = reader.ReadInt32();
             Coords.y = reader.ReadInt32();
 
-            Position = reader.ReadVector4();
+            Position = AxisConversion.Position(reader.ReadVector4());
 
             Unknown7 = reader.ReadInt32();
 
@@ -71,7 +72,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
             for (var i = 0; i < runtimeObjectCount; i++) {
                 var runtimeObject = new RuntimeObject(_version);
-
                 runtimeObject.Deserialize(reader);
 
                 RuntimeObjects.Add(runtimeObject);
@@ -81,7 +81,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
             for (var i = 0; i < rawLightCount; i++) {
                 var rawLight = new RawLight();
-
                 rawLight.Deserialize(reader);
 
                 RawLights.Add(rawLight);
@@ -91,7 +90,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
             for (var i = 0; i < rawAreaCount; i++) {
                 var rawArea = new RawArea();
-
                 rawArea.Deserialize(reader);
 
                 RawAreas.Add(rawArea);
@@ -101,7 +99,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
             for (var i = 0; i < rawGroupCount; i++) {
                 var rawGroup = new RawGroup();
-
                 rawGroup.Deserialize(reader);
 
                 RawGroups.Add(rawGroup);
