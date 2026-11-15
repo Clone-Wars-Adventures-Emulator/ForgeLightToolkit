@@ -3,7 +3,8 @@
     "rootNamespace": "ForgeLightToolkit",
     "references": [
         "GUID:237ebda5d022bc942846096a0f08f009",
-        "GUID:73b250b360f1a4b45a380b3fd030bb32"
+        "GUID:73b250b360f1a4b45a380b3fd030bb32",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
     ],
     "includePlatforms": [
         "Editor"
