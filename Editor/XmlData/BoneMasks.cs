@@ -624,7 +624,8 @@ namespace ForgeLightToolkit.Editor.XmlData {
         <Bone name=""R_knee"" weight=""0.2"" />
         <Bone name=""L_ankle"" weight=""0.2"" />
         <Bone name=""R_ankle"" weight=""0.2"" />
-        <Bone name=""R_ankle"" weight=""0.2"" />
+<!-- below entry is a duplicate, CWAEmu's FLTK fork commented it out -->
+        <!-- <Bone name=""R_ankle"" weight=""0.2"" /> -->
         <Bone name=""spineLower"" weight=""0.4"" />
         <Bone name=""spineUpper"" weight=""0.7"" />
         <Bone name=""head"" weight=""1.0"" />
@@ -1288,7 +1289,8 @@ namespace ForgeLightToolkit.Editor.XmlData {
         <Bone name=""LB_indexB"" weight=""1.0"" />
         <Bone name=""LB_flipperA"" weight=""1.0"" />
         <Bone name=""LB_flipperB"" weight=""1.0"" />
-        <Bone name=""LB_clavicle"" weight=""1.0"" />
+<!-- CWAEmu's Fork changed the below from LB to LT, seems like that was a typo in the original data -->
+        <Bone name=""LT_clavicle"" weight=""1.0"" />
         <Bone name=""LT_shouLder"" weight=""1.0"" />
         <Bone name=""LT_eLbow"" weight=""1.0"" />
         <Bone name=""LT_forearm"" weight=""1.0"" />
@@ -1387,7 +1389,7 @@ namespace ForgeLightToolkit.Editor.XmlData {
 
     [XmlRoot("BoneMaskTypes")]
     [Serializable]
-    internal class BoneMaskTypes {
+    public class BoneMaskTypes {
         [XmlElement("BoneMaskSuffixes", Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public BoneMaskSuffixes suffixData;
 
@@ -1396,7 +1398,7 @@ namespace ForgeLightToolkit.Editor.XmlData {
     }
 
     [Serializable]
-    internal class BoneMaskSuffixes {
+    public class BoneMaskSuffixes {
         [XmlElement("Suffix", Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public Suffix[] suffixes;
 
@@ -1408,7 +1410,7 @@ namespace ForgeLightToolkit.Editor.XmlData {
     }
 
     [Serializable]
-    internal class BoneMask {
+    public class BoneMask {
         [XmlAttribute]
         public string name;
 
@@ -1417,12 +1419,11 @@ namespace ForgeLightToolkit.Editor.XmlData {
     }
 
     [Serializable]
-    internal class Bone {
+    public class Bone {
         [XmlAttribute]
         public string name;
 
         [XmlAttribute]
         public float weight;
     }
-
 }
