@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ForgeLightToolkit.Editor {
+namespace ForgeLightToolkit.Editor.XmlData {
     [XmlRoot("MaterialInfo")]
     [Serializable]
     public class MaterialInfo {
