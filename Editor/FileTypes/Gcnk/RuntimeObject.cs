@@ -7,7 +7,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     public class RuntimeObject {
         private readonly int _version;
 
-        public int Unknown; // TODO
+        public int ObjectId; // TODO
 
         public string FileName;
         public string Unknown3;
@@ -22,7 +22,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
         public Vector4 Unknown9;
 
-        public int ObjectId;
+        public int SpawnContext;
         public int Unknown11;
 
         public List<byte[]> Unknown12 = new();
@@ -32,20 +32,20 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
         }
 
         public override string ToString() {
-            return $"{nameof(Unknown)}: {Unknown}, " +
+            return $"{nameof(ObjectId)}: {ObjectId}, " +
                    $"{nameof(FileName)}: {FileName}, " +
-                   $"{nameof(Position)}: ({Position.x}, {Position.y}, {Position.z}), " +
-                   $"{nameof(Rotation)}: ({Rotation.x}, {Rotation.y}, {Rotation.z}), " +
+                   $"{nameof(Position)}: {Position}, " +
+                   $"{nameof(Rotation)}: {Rotation}, " +
                    $"{nameof(Scale)}: {Scale}, " +
                    $"{nameof(MaterialName)}: {MaterialName}, " +
                    $"{nameof(TintAlias)}: {TintAlias}, " +
                    $"{nameof(Unknown9)}: ({Unknown9.x}, {Unknown9.y}, {Unknown9.z}), " +
-                   $"{nameof(ObjectId)}: {ObjectId}, " +
+                   $"{nameof(SpawnContext)}: {SpawnContext}, " +
                    $"{nameof(Unknown11)}: {Unknown11}";
         }
 
         public void Deserialize(Reader reader) {
-            Unknown = reader.ReadInt32();
+            ObjectId = reader.ReadInt32();
 
             FileName = reader.ReadNullTerminatedString();
             Unknown3 = reader.ReadNullTerminatedString();
@@ -55,6 +55,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
             Scale = reader.ReadSingle();
 
+            // none of the CWA Tiles are version 6, so we dont care to check if this is right
             if (_version >= 6) {
                 MaterialName = reader.ReadNullTerminatedString();
                 TintAlias = reader.ReadNullTerminatedString();
@@ -67,7 +68,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             reader.Skip(4);
 
             if (_version > 4) {
-                ObjectId = reader.ReadInt32();
+                SpawnContext = reader.ReadInt32();
             } else {
                 var unknown = reader.ReadNullTerminatedString();
                 Debug.Log($"Unknown RuntimeObject Value: {unknown}");

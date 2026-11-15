@@ -6,13 +6,13 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
         public string Name;
         public string Texture;
 
-        public bool Unknown;
+        public bool Enabled;
 
         public void Deserialize(Reader reader) {
             Name = reader.ReadNullTerminatedString();
             Texture = reader.ReadNullTerminatedString();
 
-            Unknown = reader.ReadBool();
+            Enabled = reader.ReadBool();
         }
     }
 }

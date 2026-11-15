@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
+    // unused in CWA
     [Serializable]
     public class FloraData {
         public Vector3 Position;
@@ -11,6 +12,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gzne {
         public string Unknown2;
 
         public void Deserialize(Reader reader) {
+            // TODO: needs invert z? wont do it cause unused
             Position = reader.ReadVector3();
 
             Unknown = reader.ReadByte();

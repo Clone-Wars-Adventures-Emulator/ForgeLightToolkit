@@ -9,17 +9,15 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
 
         public Vector2Int Coords;
 
-        // TODO: this may not be a position
-        public Vector4 Position;
+        public uint RandomSeed;
+        public uint EnvironmentIndex;
+        public float TerrainHeightDefault1;
+        public uint EnabledFlag;
 
-        public int Unknown7;
+        public int BoundsEnabled;
+        public Vector4 OptionalVolume;
 
-        public int Unknown8;
-        public int Unknown9;
-        public int Unknown10;
-        public int Unknown11;
-
-        public float Unknown12;
+        public float TerrainHeightDefault2;
 
         public List<int> EcoDataList = new();
 
@@ -41,24 +39,24 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             Coords.x = reader.ReadInt32();
             Coords.y = reader.ReadInt32();
 
-            Position = AxisConversion.Position(reader.ReadVector4());
+            RandomSeed = reader.ReadUInt32();
+            EnvironmentIndex = reader.ReadUInt32();
+            TerrainHeightDefault1 = reader.ReadSingle();
+            EnabledFlag = reader.ReadUInt32();
 
-            Unknown7 = reader.ReadInt32();
-
-            if (Unknown7 > 0) {
-                Unknown8 = reader.ReadInt32();
-                Unknown9 = reader.ReadInt32();
-                Unknown10 = reader.ReadInt32();
-                Unknown11 = reader.ReadInt32();
+            BoundsEnabled = reader.ReadInt32();
+            if (BoundsEnabled > 0) {
+                OptionalVolume = reader.ReadVector4();
             }
 
-            Unknown12 = reader.ReadSingle();
+            TerrainHeightDefault2 = reader.ReadSingle();
 
             var ecoDataCount = reader.ReadInt32();
 
             for (var i = 0; i < ecoDataCount; i++) {
                 EcoDataList.Add(reader.ReadInt32());
 
+                // What?
                 if (!reader.IsLittleEndian) {
                     var unknown = reader.ReadInt32();
 
@@ -69,7 +67,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             }
 
             var runtimeObjectCount = reader.ReadInt32();
-
             for (var i = 0; i < runtimeObjectCount; i++) {
                 var runtimeObject = new RuntimeObject(_version);
                 runtimeObject.Deserialize(reader);
@@ -78,7 +75,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             }
 
             var rawLightCount = reader.ReadInt32();
-
             for (var i = 0; i < rawLightCount; i++) {
                 var rawLight = new RawLight();
                 rawLight.Deserialize(reader);
@@ -87,7 +83,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             }
 
             var rawAreaCount = reader.ReadInt32();
-
             for (var i = 0; i < rawAreaCount; i++) {
                 var rawArea = new RawArea();
                 rawArea.Deserialize(reader);
@@ -96,7 +91,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
             }
 
             var rawGroupCount = reader.ReadInt32();
-
             for (var i = 0; i < rawGroupCount; i++) {
                 var rawGroup = new RawGroup();
                 rawGroup.Deserialize(reader);

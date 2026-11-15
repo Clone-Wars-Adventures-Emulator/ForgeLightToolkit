@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.FileTypes.Gcnk {
     [Serializable]
+    // Unused in CWA, so this wont be explored further
     public class RawGroup {
         // probably group file name
         public string Unknown;

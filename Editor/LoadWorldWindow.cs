@@ -457,12 +457,12 @@ namespace ForgeLightToolkit.Editor {
 
                     foreach (var tile in gcnkFile.Tiles) {
                         foreach (var runtimeObject in tile.RuntimeObjects) {
-                            if (runtimeObject.Unknown > 0) {
-                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.Unknown, runtimeObject)) {
+                            if (runtimeObject.ObjectId > 0) {
+                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.ObjectId, runtimeObject)) {
                                     continue;
                                 }
                             } else {
-                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.ObjectId, runtimeObject)) {
+                                if (!loadedRuntimeObjects.TryAdd(runtimeObject.SpawnContext, runtimeObject)) {
                                     continue;
                                 }
                             }
@@ -470,7 +470,7 @@ namespace ForgeLightToolkit.Editor {
                             var fileExtension = Path.GetExtension(runtimeObject.FileName);
 
                             if (fileExtension == ".adr") {
-                                LoadAdrFile(runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.ObjectId);
+                                LoadAdrFile(runtimeObject.FileName, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.SpawnContext);
                             } else if (fileExtension == ".agr") {
                                 var agrFilePath = Path.Combine(assetsPath, runtimeObject.FileName);
 
@@ -482,7 +482,7 @@ namespace ForgeLightToolkit.Editor {
                                 }
 
                                 foreach (var actor in agrFile.ActorSet.Actors) {
-                                    LoadAdrFile(actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.ObjectId);
+                                    LoadAdrFile(actor.Name, chunkObject, runtimeObject.Position, runtimeObject.Scale, runtimeObject.Rotation, runtimeObject.SpawnContext);
                                 }
                             }
                         }

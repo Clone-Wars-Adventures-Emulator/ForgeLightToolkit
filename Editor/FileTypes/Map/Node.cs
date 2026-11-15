@@ -6,6 +6,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Map {
     public struct Node {
         public int Id;
 
+        // Why is this a vector3? Isnt the map a 2d construct?
         public Vector3 Position;
 
         public Edge[] Edges;
