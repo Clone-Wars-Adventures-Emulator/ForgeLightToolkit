@@ -60,6 +60,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dsk {
                 uint nameOffset = reader.ReadUInt32();
                 var node = new SkeletonNode() {
                     name = offsetToStr[nameOffset],
+                    nameHash = JenkinsHelper.JenkinsOneAtATimeHash(offsetToStr[nameOffset]),
                     parentIndex = reader.ReadInt16(),
                     firstChildIndex = reader.ReadInt16(),
                 };
@@ -79,7 +80,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dsk {
                 };
                 boneLocalTransforms.Add(matrix);
             }
-
 
             return true;
         }
@@ -155,6 +155,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dsk {
     [Serializable]
     public class SkeletonNode {
         public string name;
+        public uint nameHash;
         public short parentIndex;
         public short firstChildIndex;
     }

@@ -70,13 +70,11 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dma {
 
         private bool LoadInternal(Reader reader) {
             var magic = new string(reader.ReadChars(4));
-
             if (magic != "DMAT") {
                 return false;
             }
 
             var version = reader.ReadUInt32();
-
             if (version != 1) {
                 return false;
             }

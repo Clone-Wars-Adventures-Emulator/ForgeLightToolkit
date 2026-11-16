@@ -1,3 +1,4 @@
+using ForgeLightToolkit.Editor.XmlData;
 using ForgeLightToolkit.Editor.FileTypes.Dma;
 using System;
 using System.Linq;
@@ -7,8 +8,9 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
     [Serializable]
     public class MeshEntry {
         public int MaterialIndex;
+        // this is always 1?
+        public int Unknown2_DirectoryEntryCount;
 
-        public int Unknown2;
         public int Unknown3;
         public int Unknown4;
 
@@ -29,32 +31,26 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
             };
 
             var materialDefinition = MaterialInfo.Instance?.MaterialDefinitions.SingleOrDefault(x => x.NameHash == materialEntry.Hash);
-
             if (materialDefinition is null) {
                 Debug.LogError("Failed to find material definition.");
                 return false;
             }
 
             var drawStyle = materialDefinition.DrawStyles.First();
-
             if (drawStyle is null) {
                 Debug.LogError("Material Definition doesn't contain a DrawStyle.");
                 return false;
             }
 
             var inputLayout = MaterialInfo.Instance?.InputLayouts.SingleOrDefault(x => x.NameHash == drawStyle.InputLayoutHash);
-
             if (inputLayout is null) {
                 Debug.LogError("Failed to find Input Layout.");
                 return false;
             }
 
             // Vertices
-
             var vertices = new Vector3[VertexBufferCount];
-
             var positionEntry = inputLayout.Entries.SingleOrDefault(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.Position);
-
             if (positionEntry is null) {
                 Debug.LogError("Model doesn't have a position entry.");
                 return false;
@@ -72,15 +68,11 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
                 Debug.LogError($"Unimplemented Input Layout Type \"{positionEntry.Type}\" for Position.");
                 return false;
             }
-
             Mesh.SetVertices(vertices);
 
             // Normals
-
             var normals = new Vector3[VertexBufferCount];
-
             var normalEntry = inputLayout.Entries.SingleOrDefault(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.Normal);
-
             if (normalEntry is not null) {
                 if (normalEntry.Type == MaterialInfo.InputLayout.Entry.EntryType.Float3) {
                     for (var i = 0; i < VertexBufferCount; i++) {
@@ -97,11 +89,9 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
                     return false;
                 }
             }
-
             Mesh.SetNormals(normals);
 
             // UVs
-
             foreach (var texCoordEntry in inputLayout.Entries.Where(x => x.Usage == MaterialInfo.InputLayout.Entry.EntryUsage.TexCoord)) {
                 var uvs = new Vector2[VertexBufferCount];
 
@@ -123,9 +113,7 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
             }
 
             // Indices
-
             var indices = new int[IndexBufferCount];
-
             for (var i = 0; i < IndexBufferCount; i++) {
                 indices[i] = IndexSize switch {
                     2 => BitConverter.ToInt16(IndexBuffer, i * IndexSize),
@@ -133,7 +121,6 @@ namespace ForgeLightToolkit.Editor.FileTypes.Dme {
                     _ => throw new NotImplementedException()
                 };
             }
-
             Mesh.SetIndices(indices, MeshTopology.Triangles, 0);
 
             return true;
