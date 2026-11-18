@@ -4,6 +4,7 @@ using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
+    // This does not need to wait for images to be parsed before running, queue weight default
     [ScriptedImporter(1, "dsk")]
     public class DskImporter : ScriptedImporter {
         public override void OnImportAsset(AssetImportContext ctx) {

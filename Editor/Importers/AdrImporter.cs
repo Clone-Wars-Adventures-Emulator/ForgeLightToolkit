@@ -3,7 +3,8 @@ using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
-    [ScriptedImporter(1, "adr")]
+    // Queue weight to be after DME, DMA, DSK, and all other importers
+    [ScriptedImporter(1, "adr", QueueOffsets.STAGE_2_ADR)]
     public class AdrImporter : ScriptedImporter {
         public override void OnImportAsset(AssetImportContext ctx) {
             if (string.IsNullOrEmpty(ctx.assetPath)) {

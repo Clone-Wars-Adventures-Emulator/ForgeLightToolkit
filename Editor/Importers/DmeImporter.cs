@@ -3,7 +3,8 @@ using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
-    [ScriptedImporter(1, "dme")]
+    // DMAs need images
+    [ScriptedImporter(1, "dme", QueueOffsets.STAGE_1_POST_IMAGES)]
     public class DmeImporter : ScriptedImporter {
         public override void OnImportAsset(AssetImportContext ctx) {
             if (string.IsNullOrEmpty(ctx.assetPath)) {

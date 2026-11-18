@@ -3,7 +3,8 @@ using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace ForgeLightToolkit.Editor.Importers {
-    [ScriptedImporter(1, "agr")]
+    // Theoretically, though unprovable with current game data, this would depend on the ADR files, and as such this should run after ADRs
+    [ScriptedImporter(1, "agr", QueueOffsets.STAGE_3_POST_ADR)]
     public class AgrImporter : ScriptedImporter {
         public override void OnImportAsset(AssetImportContext ctx) {
             if (string.IsNullOrEmpty(ctx.assetPath)) {
