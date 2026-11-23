@@ -25,8 +25,8 @@ namespace ForgeLightToolkit.Editor.Importers {
 
             ctx.AddObjectToAsset("Dma", dmeFile.DmaFile);
 
-            foreach (var meshEntry in dmeFile.Meshes){
-                ctx.AddObjectToAsset(meshEntry.Mesh.name, meshEntry.Mesh);
+            foreach (var submesh in dmeFile.submeshes){
+                ctx.AddObjectToAsset(submesh.mesh.name, submesh.mesh);
             }
 
             var materials = dmeFile.DmaFile.CreateMaterialsFrom(dmeFile.name);

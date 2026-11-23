@@ -579,8 +579,9 @@ namespace ForgeLightToolkit.Editor {
                 AddColliderToObject(runtimeObject, adrFile.collisionFile);
             }
 
-            foreach (var meshEntry in dmeFile.Meshes) {
-                var meshObject = new GameObject(meshEntry.Mesh.name) {
+            // TODO: this will all need to be moved to a universal location for ADR importing n stuff
+            foreach (var submesh in dmeFile.submeshes) {
+                var meshObject = new GameObject(submesh.mesh.name) {
                     transform = {
                         parent = runtimeObject.transform,
                         localPosition = Vector3.zero,
@@ -590,15 +591,17 @@ namespace ForgeLightToolkit.Editor {
                 };
 
                 var objectMeshFilter = meshObject.AddComponent<MeshFilter>();
-                objectMeshFilter.sharedMesh = meshEntry.Mesh;
+                objectMeshFilter.sharedMesh = submesh.mesh;
                 var objectMeshRenderer = meshObject.AddComponent<MeshRenderer>();
 
-                if (dmaFile.MaterialEntries[meshEntry.MaterialIndex].Name.Contains("NoShadow")) {
+                var matIdx = dmeFile.MeshEntries[submesh.meshEntryIdx].MaterialIndex;
+                if (dmaFile.MaterialEntries[matIdx].Name.Contains("NoShadow")) {
                     objectMeshRenderer.shadowCastingMode = ShadowCastingMode.Off;
                 }
 
-                // in theory, this is resiliant to null materials
-                objectMeshRenderer.material = dmaFile.materials[meshEntry.MaterialIndex];
+                // Note: Switching from .material to .sharedMaterial because of the following error log
+                // Instantiating material due to calling renderer.material during edit mode. This will leak materials into the scene. You most likely want to use renderer.sharedMaterial instead.
+                objectMeshRenderer.sharedMaterial = dmaFile.materials[matIdx];
             }
 
             // Apply the extensions to the adr instance
